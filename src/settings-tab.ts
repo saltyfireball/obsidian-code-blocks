@@ -1,4 +1,4 @@
-import { PluginSettingTab, App, Notice } from "obsidian";
+import { PluginSettingTab, App, Notice, Setting } from "obsidian";
 import type { Plugin } from "obsidian";
 import type { CodeBlocksSettings } from "./settings";
 import type { CodeBlockLanguageConfig, CodeBlockLanguages, LanguageIcon } from "./languages";
@@ -93,132 +93,116 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 		const settings = plugin.settings;
 
 		contentEl.createEl("h2", { text: "General Settings" });
-
-		// Enable toggle
-		this.createToggleSetting(contentEl, {
-			name: "Enable Code Blocks",
-			desc: "Enable the code blocks plugin to decorate fenced code blocks in reading and live preview modes. Requires a restart to fully apply.",
-			value: settings.enabled,
-			onChange: async (value: boolean) => {
-				settings.enabled = value;
-				await plugin.saveSettings();
-				plugin.updateCSS();
-				new Notice(`Code Blocks plugin ${value ? "enabled" : "disabled"}. Restart Obsidian for full effect.`);
-			},
+		contentEl.createEl("p", {
+			text: "Core options for code block decoration in reading and live preview modes.",
+			cls: "sf-hint",
 		});
 
-		// Line numbers toggle
-		this.createToggleSetting(contentEl, {
-			name: "Show Line Numbers",
-			desc: "Display line numbers alongside code blocks.",
-			value: settings.showLineNumbers,
-			onChange: async (value: boolean) => {
-				settings.showLineNumbers = value;
-				await plugin.saveSettings();
-				document.body.classList.toggle("sf-show-line-numbers", value);
-			},
-		});
+		new Setting(contentEl)
+			.setName("Enable Code Blocks")
+			.setDesc("Enable the code blocks plugin to decorate fenced code blocks in reading and live preview modes. Requires a restart to fully apply.")
+			.addToggle((toggle) =>
+				toggle.setValue(settings.enabled).onChange(async (value) => {
+					settings.enabled = value;
+					await plugin.saveSettings();
+					plugin.updateCSS();
+					new Notice(`Code Blocks plugin ${value ? "enabled" : "disabled"}. Restart Obsidian for full effect.`);
+				})
+			);
 
-		// Copy button toggle
-		this.createToggleSetting(contentEl, {
-			name: "Show Copy Button",
-			desc: "Display a copy-to-clipboard button in the code block header.",
-			value: settings.showCopyButton,
-			onChange: async (value: boolean) => {
-				settings.showCopyButton = value;
-				await plugin.saveSettings();
-				plugin.updateCSS();
-			},
-		});
+		new Setting(contentEl)
+			.setName("Show Line Numbers")
+			.setDesc("Display line numbers alongside code blocks.")
+			.addToggle((toggle) =>
+				toggle.setValue(settings.showLineNumbers).onChange(async (value) => {
+					settings.showLineNumbers = value;
+					await plugin.saveSettings();
+					document.body.classList.toggle("sf-show-line-numbers", value);
+				})
+			);
+
+		new Setting(contentEl)
+			.setName("Show Copy Button")
+			.setDesc("Display a copy-to-clipboard button in the code block header.")
+			.addToggle((toggle) =>
+				toggle.setValue(settings.showCopyButton).onChange(async (value) => {
+					settings.showCopyButton = value;
+					await plugin.saveSettings();
+					plugin.updateCSS();
+				})
+			);
 
 		// Background color
 		contentEl.createEl("h3", { text: "Background Color" });
 
-		const bgItem = contentEl.createDiv("sf-setting-item");
-		const bgInfo = bgItem.createDiv("sf-setting-info");
-		bgInfo.createDiv({ text: "Code Block Background", cls: "sf-setting-name" });
-		bgInfo.createDiv({
-			text: "Set a custom background color for all code blocks. Leave empty to use the theme default.",
-			cls: "sf-setting-desc",
-		});
+		let colorInput: HTMLInputElement;
+		let textInput: HTMLInputElement;
 
-		const bgControl = bgItem.createDiv("sf-setting-control");
-
-		const colorInput = bgControl.createEl("input", {
-			type: "color",
-			cls: "sf-color-input",
-		}) as HTMLInputElement;
-		colorInput.value = isHexColor(settings.backgroundColor) ? settings.backgroundColor : "#282a36";
-
-		const textInput = bgControl.createEl("input", {
-			type: "text",
-			cls: "sf-text-input",
-			placeholder: "#RRGGBB",
-			value: settings.backgroundColor || "",
-		}) as HTMLInputElement;
-
-		const resetBtn = bgControl.createEl("button", {
-			text: "Reset",
-			cls: "sf-reset-btn",
-			attr: { type: "button" },
-		});
-
-		colorInput.addEventListener("input", async () => {
-			const val = colorInput.value;
-			textInput.value = val;
-			settings.backgroundColor = val;
-			await plugin.saveSettings();
-			plugin.updateCSS();
-		});
-
-		textInput.addEventListener("change", async () => {
-			const val = textInput.value.trim();
-			if (val === "" || isHexColor(val)) {
-				settings.backgroundColor = val;
-				if (isHexColor(val)) {
-					colorInput.value = val;
-				}
-				await plugin.saveSettings();
-				plugin.updateCSS();
-			} else {
-				new Notice("Invalid color. Use #RRGGBB format.");
-				textInput.value = settings.backgroundColor;
-			}
-		});
-
-		resetBtn.addEventListener("click", async () => {
-			settings.backgroundColor = "";
-			textInput.value = "";
-			colorInput.value = "#282a36";
-			await plugin.saveSettings();
-			plugin.updateCSS();
-		});
+		new Setting(contentEl)
+			.setName("Code Block Background")
+			.setDesc("Set a custom background color for all code blocks. Leave empty to use the theme default.")
+			.addColorPicker((picker) => {
+				picker.setValue(isHexColor(settings.backgroundColor) ? settings.backgroundColor : "#282a36");
+				picker.onChange(async (value) => {
+					settings.backgroundColor = value;
+					if (textInput) textInput.value = value;
+					await plugin.saveSettings();
+					plugin.updateCSS();
+				});
+			})
+			.addText((text) => {
+				textInput = text.inputEl;
+				text.setPlaceholder("#RRGGBB")
+					.setValue(settings.backgroundColor || "")
+					.onChange(async (value) => {
+						const val = value.trim();
+						if (val === "" || isHexColor(val)) {
+							settings.backgroundColor = val;
+							await plugin.saveSettings();
+							plugin.updateCSS();
+						}
+					});
+				text.inputEl.style.width = "100px";
+				text.inputEl.style.fontFamily = "var(--font-monospace)";
+			})
+			.addButton((btn) =>
+				btn.setButtonText("Reset").onClick(async () => {
+					settings.backgroundColor = "";
+					if (textInput) textInput.value = "";
+					await plugin.saveSettings();
+					plugin.updateCSS();
+					this.display();
+				})
+			);
 
 		// Ignore languages
 		contentEl.createEl("h3", { text: "Ignore Languages" });
 
-		const ignoreItem = contentEl.createDiv("sf-setting-item");
-		const ignoreInfo = ignoreItem.createDiv("sf-setting-info");
-		ignoreInfo.createDiv({ text: "Ignored Languages", cls: "sf-setting-name" });
-		ignoreInfo.createDiv({
-			text: "Comma-separated list of languages to exclude from decoration (e.g., mermaid, my-toc).",
-			cls: "sf-setting-desc",
-		});
+		let ignoreInput: HTMLInputElement;
 
-		const ignoreControl = ignoreItem.createDiv("sf-setting-control");
-
-		const ignoreInput = ignoreControl.createEl("input", {
-			type: "text",
-			cls: "sf-text-input sf-ignore-input",
-			placeholder: "mermaid, my-toc",
-			value: settings.ignoreLanguages.join(", "),
-		}) as HTMLInputElement;
-
-		const ignoreSaveBtn = ignoreControl.createEl("button", {
-			text: "Save",
-			cls: "sf-save-btn",
-			attr: { type: "button" },
-		});
+		new Setting(contentEl)
+			.setName("Ignored Languages")
+			.setDesc("Comma-separated list of languages to exclude from decoration (e.g., mermaid, my-toc).")
+			.addText((text) => {
+				ignoreInput = text.inputEl;
+				text.setPlaceholder("mermaid, my-toc")
+					.setValue(settings.ignoreLanguages.join(", "));
+				text.inputEl.style.width = "180px";
+			})
+			.addButton((btn) =>
+				btn.setButtonText("Save").onClick(async () => {
+					const raw = ignoreInput.value;
+					const parsed = raw
+						.split(",")
+						.map((s) => s.trim())
+						.filter((s) => s.length > 0);
+					settings.ignoreLanguages = parsed;
+					ignoreInput.value = parsed.join(", ");
+					await plugin.saveSettings();
+					renderIgnoreTags();
+					new Notice("Ignored languages updated.");
+				})
+			);
 
 		// Tags container for current ignore list
 		const tagsContainer = contentEl.createDiv("sf-tags-container");
@@ -243,19 +227,6 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 				});
 			}
 		};
-
-		ignoreSaveBtn.addEventListener("click", async () => {
-			const raw = ignoreInput.value;
-			const parsed = raw
-				.split(",")
-				.map((s) => s.trim())
-				.filter((s) => s.length > 0);
-			settings.ignoreLanguages = parsed;
-			ignoreInput.value = parsed.join(", ");
-			await plugin.saveSettings();
-			renderIgnoreTags();
-			new Notice("Ignored languages updated.");
-		});
 
 		renderIgnoreTags();
 	}
@@ -601,50 +572,4 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 		});
 	}
 
-	// -----------------------------------------------------------------------
-	// Helpers
-	// -----------------------------------------------------------------------
-
-	private createToggleSetting(
-		container: HTMLElement,
-		opts: {
-			name: string;
-			desc: string;
-			value: boolean;
-			onChange: (value: boolean) => void;
-		},
-	): void {
-		const item = container.createDiv("sf-setting-item");
-		const info = item.createDiv("sf-setting-info");
-		info.createDiv({ text: opts.name, cls: "sf-setting-name" });
-		info.createDiv({ text: opts.desc, cls: "sf-setting-desc" });
-
-		const control = item.createDiv("sf-setting-control");
-		const toggle = control.createDiv("sf-toggle");
-		if (opts.value) {
-			toggle.addClass("sf-toggle-active");
-		}
-		toggle.setAttribute("role", "switch");
-		toggle.setAttribute("tabindex", "0");
-		toggle.setAttribute("aria-checked", String(opts.value));
-		toggle.setAttribute("aria-label", opts.name);
-
-		toggle.addEventListener("click", () => {
-			const newVal = !toggle.hasClass("sf-toggle-active");
-			if (newVal) {
-				toggle.addClass("sf-toggle-active");
-			} else {
-				toggle.removeClass("sf-toggle-active");
-			}
-			toggle.setAttribute("aria-checked", String(newVal));
-			opts.onChange(newVal);
-		});
-
-		toggle.addEventListener("keydown", (e: KeyboardEvent) => {
-			if (e.key === "Enter" || e.key === " ") {
-				e.preventDefault();
-				toggle.click();
-			}
-		});
-	}
 }
