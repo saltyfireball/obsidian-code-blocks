@@ -18,7 +18,7 @@ interface HighlighterSettingsParams {
 }
 
 export function renderHighlighterTab({ plugin, contentEl, rerender }: HighlighterSettingsParams) {
-	contentEl.createEl("h2", { text: "Syntax Highlighting" });
+	new Setting(contentEl).setName("Syntax highlighting").setHeading();
 	contentEl.createEl("p", {
 		text: "Use highlight.js to provide consistent syntax highlighting across preview and live preview modes. Changes apply immediately without restart.",
 		cls: "sf-hint",
@@ -68,7 +68,7 @@ export function renderHighlighterTab({ plugin, contentEl, rerender }: Highlighte
 				})
 		);
 
-	contentEl.createEl("h3", { text: "Supported Languages" });
+	new Setting(contentEl).setName("Supported languages").setHeading();
 	contentEl.createEl("p", {
 		text: "The following languages are supported by highlight.js. Use these names in your code block fence (e.g., ```javascript).",
 		cls: "sf-hint",

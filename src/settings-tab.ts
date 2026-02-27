@@ -92,7 +92,7 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 		const plugin = this.plugin;
 		const settings = plugin.settings;
 
-		contentEl.createEl("h2", { text: "General Settings" });
+		new Setting(contentEl).setName("General settings").setHeading();
 		contentEl.createEl("p", {
 			text: "Core options for code block decoration in reading and live preview modes.",
 			cls: "sf-hint",
@@ -133,7 +133,7 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 			);
 
 		// Background color
-		contentEl.createEl("h3", { text: "Background Color" });
+		new Setting(contentEl).setName("Background color").setHeading();
 
 		let colorInput: HTMLInputElement;
 		let textInput: HTMLInputElement;
@@ -176,7 +176,7 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 			);
 
 		// Ignore languages
-		contentEl.createEl("h3", { text: "Ignore Languages" });
+		new Setting(contentEl).setName("Ignore languages").setHeading();
 
 		let ignoreInput: HTMLInputElement;
 
@@ -239,7 +239,7 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 		const plugin = this.plugin;
 		const settings = plugin.settings;
 
-		contentEl.createEl("h2", { text: "Language Configuration" });
+		new Setting(contentEl).setName("Language configuration").setHeading();
 		contentEl.createEl("p", {
 			text: "Configure display names, colors, icons, and aliases for each language.",
 			cls: "sf-hint",
@@ -460,7 +460,7 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 		const plugin = this.plugin;
 		const settings = plugin.settings;
 
-		contentEl.createEl("h2", { text: "Custom CSS" });
+		new Setting(contentEl).setName("Custom CSS").setHeading();
 		contentEl.createEl("p", {
 			text: "Add custom CSS to override code block styles. Changes are applied when you click Save.",
 			cls: "sf-hint",
@@ -476,7 +476,7 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 		const helpContent = contentEl.createDiv("sf-help-content");
 		helpContent.style.display = "none";
 
-		helpContent.createEl("h4", { text: "Available CSS Variables" });
+		new Setting(helpContent).setName("Available CSS variables").setHeading();
 		const varList = helpContent.createEl("ul", { cls: "sf-css-var-list" });
 		const cssVars: [string, string][] = [
 			["--sf-cb-language-color", "The primary color for the language (header text, icon tint)"],
@@ -490,7 +490,7 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 			li.createSpan({ text: ` - ${desc}` });
 		}
 
-		helpContent.createEl("h4", { text: "Useful Selectors" });
+		new Setting(helpContent).setName("Useful selectors").setHeading();
 		const selectorList = helpContent.createEl("ul", { cls: "sf-css-selector-list" });
 		const selectors: [string, string][] = [
 			[".sf-codeblock-wrapper", "Outer wrapper for each decorated code block"],
