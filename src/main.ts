@@ -1,9 +1,8 @@
 import { MarkdownView, Plugin } from "obsidian";
 import { CodeBlocksSettings, DEFAULT_SETTINGS } from "./settings";
 import { CodeBlocksSettingTab } from "./settings-tab";
-import { registerCodeBlocks, updateCodeBlockCSS, createManagedStyleEl } from "./register";
-import { registerHighlighter, reloadHighlighter } from "./highlighter/register";
-import { highlightToTokens, getHighlighterState } from "./highlighter/index";
+import { registerCodeBlocks, updateCodeBlockCSS } from "./register";
+import { registerHighlighter } from "./highlighter/register";
 import { deepMerge } from "./utils";
 
 declare global {
@@ -70,7 +69,9 @@ export default class CodeBlocksPlugin extends Plugin {
 	}
 
 	async loadSettings() {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- loadData returns any
 		const savedData = await this.loadData();
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- savedData is from loadData which returns any
 		this.settings = deepMerge(DEFAULT_SETTINGS, savedData || {});
 	}
 

@@ -28,7 +28,7 @@ export function renderHighlighterTab({ plugin, contentEl, rerender }: Highlighte
 
 	new Setting(contentEl)
 		.setName("Enable syntax highlighting")
-		.setDesc("Replace Obsidian's default Prism.js highlighting with highlight.js.")
+		.setDesc("Replace the default prism.js highlighting with highlight.js.")
 		.addToggle((toggle) =>
 			toggle
 				.setValue(settings.enabled)

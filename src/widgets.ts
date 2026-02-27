@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies -- @codemirror packages are provided by Obsidian at runtime
 import {
 	Decoration,
 	DecorationSet,
@@ -5,6 +6,7 @@ import {
 	ViewPlugin,
 	WidgetType,
 } from "@codemirror/view";
+// eslint-disable-next-line import/no-extraneous-dependencies -- @codemirror packages are provided by Obsidian at runtime
 import { EditorState, RangeSetBuilder, StateField } from "@codemirror/state";
 import type { Plugin } from "obsidian";
 import type { CodeBlocksSettings } from "./settings";
@@ -74,8 +76,6 @@ class CodeBlockHeaderWidget extends WidgetType {
 }
 
 export function createCodeBlockExtensions(plugin: CodeBlocksPlugin) {
-	const settings = plugin.settings;
-
 	const codeBlockField = StateField.define<DecorationSet>({
 		create(state: EditorState) {
 			return buildCodeBlockDecorations(state, plugin);
@@ -113,12 +113,12 @@ export function createCodeBlockExtensions(plugin: CodeBlocksPlugin) {
 
 				const header = copyBtn.closest(
 					".sf-codeblock-header",
-				) as HTMLElement | null;
+				);
 				if (!header) {
 					return;
 				}
 
-				const lineEl = header.closest(".cm-line") as HTMLElement | null;
+				const lineEl = header.closest(".cm-line");
 				if (!lineEl) {
 					return;
 				}
@@ -244,8 +244,6 @@ export function buildCodeBlockDecorations(
 		}
 	}
 
-	let currentBlockStart = 0;
-
 	for (let i = 1; i <= doc.lines; i++) {
 		const line = doc.line(i);
 		const text = line.text;
@@ -257,7 +255,6 @@ export function buildCodeBlockDecorations(
 			if (fenceMatch) {
 				inBlock = true;
 				lineNumInBlock = 0;
-				currentBlockStart = i;
 				blockLineCount = blockLineCounts.get(i) || 0;
 				const fenceChars = fenceMatch[1] || "";
 				fenceChar = fenceChars[0] || "";

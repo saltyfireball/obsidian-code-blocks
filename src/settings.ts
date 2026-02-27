@@ -1,4 +1,4 @@
-import type { CodeBlockLanguageConfig, CodeBlockLanguages } from "./languages";
+import type { CodeBlockLanguages } from "./languages";
 import type { HighlighterSettings } from "./highlighter/types";
 import { DEFAULT_HIGHLIGHTER_SETTINGS } from "./highlighter/types";
 

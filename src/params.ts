@@ -345,7 +345,7 @@ export function findFenceLineForCodeBlock(
   }
 
   if (candidates.length === 1) {
-    return candidates[0]!;
+    return candidates[0];
   }
 
   return null;

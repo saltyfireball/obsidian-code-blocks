@@ -39,6 +39,7 @@ type IntervalHandle = ReturnType<typeof window.setInterval>;
  */
 export function createManagedStyleEl(id: string): HTMLStyleElement {
 	document.getElementById(id)?.remove();
+	// eslint-disable-next-line obsidianmd/no-forbidden-elements -- dynamic CSS for per-language code block styling requires a managed style element
 	const styleEl = document.createElement("style");
 	styleEl.id = id;
 	document.head.appendChild(styleEl);

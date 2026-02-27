@@ -17,7 +17,7 @@ import { renderIconPickerGrid } from "./ui-components";
 
 type CodeBlocksPluginType = Plugin & {
 	settings: CodeBlocksSettings;
-	settingsTab?: any;
+	settingsTab?: { display(): void };
 	saveSettings(): Promise<void>;
 	updateCSS(): void;
 };
@@ -43,7 +43,7 @@ function createInputRow(
 		type: "text",
 		placeholder: opts?.placeholder ?? "",
 		value: opts?.value ?? "",
-	}) as HTMLInputElement;
+	});
 	if (opts?.required) {
 		input.required = true;
 	}
@@ -176,7 +176,7 @@ export class CodeBlockLanguageModal extends Modal {
 			text: isEditing ? "Save" : "Add",
 			cls: "mod-cta",
 		});
-		saveBtn.addEventListener("click", async () => {
+		saveBtn.addEventListener("click", () => { void (async () => {
 			const rawKey = langInput.value.trim().toLowerCase();
 			if (!rawKey) {
 				langInput.focus();
@@ -225,7 +225,7 @@ export class CodeBlockLanguageModal extends Modal {
 			}
 
 			this.close();
-		});
+		})(); });
 	}
 
 	onClose(): void {

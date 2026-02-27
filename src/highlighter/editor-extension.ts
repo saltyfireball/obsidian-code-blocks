@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies -- @codemirror packages are provided by Obsidian at runtime
 import {
 	Decoration,
 	DecorationSet,
@@ -5,6 +6,7 @@ import {
 	ViewPlugin,
 	ViewUpdate,
 } from "@codemirror/view";
+// eslint-disable-next-line import/no-extraneous-dependencies -- @codemirror packages are provided by Obsidian at runtime
 import { Range } from "@codemirror/state";
 import { highlightToTokens } from "./highlighter";
 import type { HighlighterSettings } from "./types";
@@ -19,10 +21,10 @@ function resolveStyle(
 	let resolved: TokenStyle | undefined;
 
 	for (let i = 0; i < combinedOverrides.length; i++) {
-		const override = combinedOverrides[i]!;
+		const override = combinedOverrides[i];
 		let allMatch = true;
 		for (let j = 0; j < override.match.length; j++) {
-			if (classes.indexOf(override.match[j]!) === -1) {
+			if (classes.indexOf(override.match[j]) === -1) {
 				allMatch = false;
 				break;
 			}
@@ -35,7 +37,7 @@ function resolveStyle(
 
 	if (!resolved) {
 		for (let i = 0; i < classes.length; i++) {
-			const s = styleMap[classes[i]!];
+			const s = styleMap[classes[i]];
 			if (s) {
 				resolved = s;
 				break;
@@ -74,8 +76,8 @@ function findCodeBlocks(view: EditorView): CodeBlock[] {
 			const match = text.match(/^(`{3,}|~{3,})\s*(\S*)/);
 			if (match) {
 				inBlock = true;
-				fenceChar = match[1]![0]!;
-				fenceLen = match[1]!.length;
+				fenceChar = match[1][0]!;
+				fenceLen = match[1].length;
 				language = match[2] || undefined;
 				contentFrom = line.to + 1;
 			}
@@ -112,12 +114,12 @@ function buildDecorations(view: EditorView): DecorationSet {
 	const blocks = findCodeBlocks(view);
 
 	for (let b = 0; b < blocks.length; b++) {
-		const block = blocks[b]!;
+		const block = blocks[b];
 		if (!block.language && !settings.autoDetect) continue;
 
 		let visible = false;
 		for (let r = 0; r < view.visibleRanges.length; r++) {
-			const range = view.visibleRanges[r]!;
+			const range = view.visibleRanges[r];
 			if (
 				block.contentFrom <= range.to &&
 				block.contentTo >= range.from
@@ -144,7 +146,7 @@ function buildDecorations(view: EditorView): DecorationSet {
 		);
 
 		for (let t = 0; t < tokens.length; t++) {
-			const token = tokens[t]!;
+			const token = tokens[t];
 			const tokenFrom = block.contentFrom + token.offset;
 			const tokenTo = tokenFrom + token.length;
 

@@ -85,7 +85,7 @@ export function renderColorPicker(options: ColorPickerOptions): ColorPickerContr
 	const nativeInput = swatchWrapper.createEl("input", {
 		type: "color",
 		cls: `${cssPrefix}-color-native-input`,
-	}) as HTMLInputElement;
+	});
 	const inputId = `cb-color-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 	nativeInput.id = inputId;
 	nativeInput.value = isEmpty ? "#6c757d" : rgbaToHex(currentR, currentG, currentB);
@@ -106,13 +106,13 @@ export function renderColorPicker(options: ColorPickerOptions): ColorPickerContr
 		cls: `${cssPrefix}-color-text-input`,
 		placeholder: placeholder ?? "#RRGGBB, #RRGGBBAA, rgb(), rgba()",
 		value: value || "",
-	}) as HTMLInputElement;
+	});
 
 	const clearBtn = row.createEl("button", {
 		cls: `${cssPrefix}-color-clear-btn`,
 		attr: { type: "button", "aria-label": "Clear color" },
 	});
-	clearBtn.innerHTML = "&#x2715;";
+	clearBtn.setText("\u2715");
 
 	// --- Row 2: Opacity slider ---
 	const opacityRow = section.createDiv(`${cssPrefix}-color-opacity-row`);
@@ -125,7 +125,7 @@ export function renderColorPicker(options: ColorPickerOptions): ColorPickerContr
 		type: "range",
 		cls: `${cssPrefix}-color-opacity-slider`,
 		attr: { min: "0", max: "100", step: "1" },
-	}) as HTMLInputElement;
+	});
 	opacitySlider.value = String(Math.round(currentA * 100));
 	updateSliderTrack(opacitySlider, currentA);
 
@@ -263,12 +263,12 @@ export function renderColorPicker(options: ColorPickerOptions): ColorPickerContr
 function applySwatch(el: HTMLElement, value: string, cssPrefix: string): void {
 	const trimmed = (value || "").trim();
 	if (!trimmed) {
-		el.style.backgroundColor = "transparent";
+		el.setCssStyles({ backgroundColor: "transparent" });
 		el.classList.add(`${cssPrefix}-color-swatch-empty`);
 		return;
 	}
 	el.classList.remove(`${cssPrefix}-color-swatch-empty`);
-	el.style.backgroundColor = trimmed;
+	el.setCssStyles({ backgroundColor: trimmed });
 }
 
 function formatOutput(r: number, g: number, b: number, a: number): string {

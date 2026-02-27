@@ -21,6 +21,7 @@ function processCodeBlock(codeEl: HTMLElement) {
 	if (!code) return;
 
 	const html = highlightCode(code, language, settings.autoDetect);
+	// eslint-disable-next-line @microsoft/sdl/no-inner-html -- highlight.js returns HTML that must be parsed into DOM
 	codeEl.innerHTML = html;
 	codeEl.classList.add("hljs");
 }
@@ -58,7 +59,7 @@ export function createHighlighterReadingViewProcessor(settings: HighlighterSetti
 function extractLanguage(codeEl: HTMLElement): string | undefined {
 	const classes = Array.from(codeEl.classList);
 	for (let i = 0; i < classes.length; i++) {
-		const cls = classes[i]!;
+		const cls = classes[i];
 		if (cls.startsWith("language-")) {
 			const lang = cls.slice("language-".length);
 			if (isLanguageSupported(lang)) {

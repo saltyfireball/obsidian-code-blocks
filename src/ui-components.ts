@@ -66,11 +66,12 @@ export function renderIconPickerGrid({
 
 			const preview = btn.createDiv("sf-icon-preview");
 			if (icon.isColored) {
-				preview.style.backgroundImage = icon.dataUrl;
+				preview.setCssStyles({ backgroundImage: icon.dataUrl });
 			} else {
-				preview.style.webkitMaskImage = icon.dataUrl;
-				preview.style.maskImage = icon.dataUrl;
-				preview.style.backgroundColor = "var(--text-normal)";
+				preview.setCssStyles({
+					maskImage: icon.dataUrl,
+					backgroundColor: "var(--text-normal)",
+				});
 			}
 
 			if (selectedId === icon.id) {
@@ -88,7 +89,7 @@ export function renderIconPickerGrid({
 
 		if (icons.length === 0) {
 			const hint = picker.createDiv("sf-hint");
-			hint.setText("No icons defined. Add icons in the Custom Icons plugin.");
+			hint.setText("No icons defined. Add icons in the custom icons plugin.");
 		} else if (filteredIcons.length === 0 && filter) {
 			const hint = picker.createDiv("sf-hint");
 			hint.setText("No icons match your search.");

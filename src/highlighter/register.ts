@@ -1,5 +1,4 @@
 import type { Plugin } from "obsidian";
-import { MarkdownView } from "obsidian";
 import type { CodeBlocksSettings } from "../settings";
 import {
 	createHighlighterEditorExtension,
@@ -20,6 +19,7 @@ type CodeBlocksPluginType = Plugin & {
 
 function createManagedStyleEl(id: string): HTMLStyleElement {
 	document.getElementById(id)?.remove();
+	// eslint-disable-next-line obsidianmd/no-forbidden-elements -- dynamic style element needed for theme CSS injection
 	const styleEl = document.createElement("style");
 	styleEl.id = id;
 	document.head.appendChild(styleEl);
@@ -55,7 +55,7 @@ export function registerHighlighter(plugin: CodeBlocksPluginType): void {
 		destroyHighlighterState();
 	});
 
-	(plugin as any).syntaxHighlight = {
+	(plugin as CodeBlocksPluginType & { syntaxHighlight?: unknown }).syntaxHighlight = {
 		highlightToTokens,
 		getState() {
 			const state = getHighlighterState();

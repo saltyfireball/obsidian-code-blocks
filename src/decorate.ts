@@ -210,7 +210,7 @@ export function setupCalloutCodeBlockObserver(plugin: CodeBlocksPlugin) {
 	const scanCalloutCodeBlocks = async (
 		root: HTMLElement | Document | Element | null,
 	) => {
-		if (!root || !root.querySelectorAll) {
+		if (!root) {
 			return;
 		}
 		if (!plugin.settings.enabled) {
@@ -238,7 +238,7 @@ export function setupCalloutCodeBlockObserver(plugin: CodeBlocksPlugin) {
 
 		const preElements = Array.from(
 			root.querySelectorAll(".callout pre"),
-		) as HTMLElement[];
+		);
 		const calloutEntries = text ? extractCalloutFenceEntries(text) : [];
 
 		preElements.forEach((preEl, index) => {
@@ -338,11 +338,9 @@ export function setupCalloutCodeBlockObserver(plugin: CodeBlocksPlugin) {
 				}
 
 				const element = node as HTMLElement;
-				const preElements = element.querySelectorAll
-					? element.querySelectorAll(
-							".callout pre:not(.sf-codeblock-decorated):not(.sf-codeblock-pending)",
-						)
-					: [];
+				const preElements = element.findAll(
+					".callout pre:not(.sf-codeblock-decorated):not(.sf-codeblock-pending)",
+				);
 
 				if (preElements.length > 0) {
 					void scanCalloutCodeBlocks(element);

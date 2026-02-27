@@ -13,9 +13,9 @@ export function parseColor(
 		/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)$/i,
 	);
 	if (rgbaMatch) {
-		const r = Math.min(255, Math.max(0, Math.round(parseFloat(rgbaMatch[1]!))));
-		const g = Math.min(255, Math.max(0, Math.round(parseFloat(rgbaMatch[2]!))));
-		const b = Math.min(255, Math.max(0, Math.round(parseFloat(rgbaMatch[3]!))));
+		const r = Math.min(255, Math.max(0, Math.round(parseFloat(rgbaMatch[1]))));
+		const g = Math.min(255, Math.max(0, Math.round(parseFloat(rgbaMatch[2]))));
+		const b = Math.min(255, Math.max(0, Math.round(parseFloat(rgbaMatch[3]))));
 		const a = rgbaMatch[4] !== undefined
 			? Math.min(1, Math.max(0, parseFloat(rgbaMatch[4])))
 			: 1;
@@ -65,11 +65,11 @@ export function sanitizeCssValue(value?: string | null): string {
  * Deep merge two objects. Values from `source` override `target`.
  * Arrays are replaced, not merged.
  */
-export function deepMerge<T extends Record<string, any>>(target: T, source: Partial<T>): T {
-	const result: Record<string, any> = { ...target };
+export function deepMerge<T extends Record<string, unknown>>(target: T, source: Partial<T>): T {
+	const result: Record<string, unknown> = { ...target };
 	for (const key of Object.keys(source)) {
-		const sourceVal = (source as Record<string, any>)[key];
-		const targetVal = (target as Record<string, any>)[key];
+		const sourceVal = (source as Record<string, unknown>)[key];
+		const targetVal = (target as Record<string, unknown>)[key];
 		if (
 			sourceVal !== null &&
 			sourceVal !== undefined &&

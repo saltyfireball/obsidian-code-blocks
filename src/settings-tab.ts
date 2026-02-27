@@ -1,11 +1,10 @@
 import { PluginSettingTab, App, Notice, Setting } from "obsidian";
 import type { Plugin } from "obsidian";
 import type { CodeBlocksSettings } from "./settings";
-import type { CodeBlockLanguageConfig, CodeBlockLanguages, LanguageIcon } from "./languages";
+import type { CodeBlockLanguageConfig, LanguageIcon } from "./languages";
 import { isHexColor } from "./utils";
 import { applyIconZoomStyles, getCodeBlockIconSizeValue } from "./header";
 import { renderHighlighterTab } from "./highlighter/settings-ui";
-import { reloadHighlighter } from "./highlighter/register";
 
 type CodeBlocksPluginType = Plugin & {
 	settings: CodeBlocksSettings;
@@ -92,14 +91,14 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 		const plugin = this.plugin;
 		const settings = plugin.settings;
 
-		new Setting(contentEl).setName("General settings").setHeading();
+		;
 		contentEl.createEl("p", {
 			text: "Core options for code block decoration in reading and live preview modes.",
 			cls: "sf-hint",
 		});
 
 		new Setting(contentEl)
-			.setName("Enable Code Blocks")
+			.setName("Enable code blocks")
 			.setDesc("Enable the code blocks plugin to decorate fenced code blocks in reading and live preview modes. Requires a restart to fully apply.")
 			.addToggle((toggle) =>
 				toggle.setValue(settings.enabled).onChange(async (value) => {
@@ -111,7 +110,7 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(contentEl)
-			.setName("Show Line Numbers")
+			.setName("Show line numbers")
 			.setDesc("Display line numbers alongside code blocks.")
 			.addToggle((toggle) =>
 				toggle.setValue(settings.showLineNumbers).onChange(async (value) => {
@@ -122,7 +121,7 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(contentEl)
-			.setName("Show Copy Button")
+			.setName("Show copy button")
 			.setDesc("Display a copy-to-clipboard button in the code block header.")
 			.addToggle((toggle) =>
 				toggle.setValue(settings.showCopyButton).onChange(async (value) => {
@@ -135,11 +134,10 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 		// Background color
 		new Setting(contentEl).setName("Background color").setHeading();
 
-		let colorInput: HTMLInputElement;
 		let textInput: HTMLInputElement;
 
 		new Setting(contentEl)
-			.setName("Code Block Background")
+			.setName("Code block background")
 			.setDesc("Set a custom background color for all code blocks. Leave empty to use the theme default.")
 			.addColorPicker((picker) => {
 				picker.setValue(isHexColor(settings.backgroundColor) ? settings.backgroundColor : "#282a36");
@@ -152,7 +150,7 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 			})
 			.addText((text) => {
 				textInput = text.inputEl;
-				text.setPlaceholder("#RRGGBB")
+				text.setPlaceholder("#rrggbb")
 					.setValue(settings.backgroundColor || "")
 					.onChange(async (value) => {
 						const val = value.trim();
@@ -162,8 +160,7 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 							plugin.updateCSS();
 						}
 					});
-				text.inputEl.style.width = "100px";
-				text.inputEl.style.fontFamily = "var(--font-monospace)";
+				text.inputEl.setCssStyles({ width: "100px", fontFamily: "var(--font-monospace)" });
 			})
 			.addButton((btn) =>
 				btn.setButtonText("Reset").onClick(async () => {
@@ -181,13 +178,13 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 		let ignoreInput: HTMLInputElement;
 
 		new Setting(contentEl)
-			.setName("Ignored Languages")
-			.setDesc("Comma-separated list of languages to exclude from decoration (e.g., mermaid, my-toc).")
+			.setName("Ignored languages")
+			.setDesc("Comma-separated list of languages to exclude from decoration, such as Mermaid or my-toc.")
 			.addText((text) => {
 				ignoreInput = text.inputEl;
-				text.setPlaceholder("mermaid, my-toc")
+				text.setPlaceholder("Mermaid, my-toc")
 					.setValue(settings.ignoreLanguages.join(", "));
-				text.inputEl.style.width = "180px";
+				text.inputEl.setCssStyles({ width: "180px" });
 			})
 			.addButton((btn) =>
 				btn.setButtonText("Save").onClick(async () => {
@@ -213,18 +210,18 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 				const tag = tagsContainer.createDiv("sf-tag");
 				tag.createSpan({ text: lang, cls: "sf-tag-text" });
 				const deleteBtn = tag.createEl("button", {
-					text: "x",
+					text: "X",
 					cls: "sf-tag-delete",
 					attr: { type: "button", "aria-label": `Remove ${lang}` },
 				});
-				deleteBtn.addEventListener("click", async () => {
+				deleteBtn.addEventListener("click", () => { void (async () => {
 					settings.ignoreLanguages = settings.ignoreLanguages.filter(
 						(l) => l !== lang,
 					);
 					ignoreInput.value = settings.ignoreLanguages.join(", ");
 					await plugin.saveSettings();
 					renderIgnoreTags();
-				});
+				})(); });
 			}
 		};
 
@@ -248,12 +245,13 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 		// Add language button
 		const toolbar = contentEl.createDiv("sf-lang-toolbar");
 		const addBtn = toolbar.createEl("button", {
-			text: "Add Language",
+			text: "Add language",
 			cls: "sf-add-btn",
 			attr: { type: "button" },
 		});
 		addBtn.addEventListener("click", () => {
-			const langKey = prompt("Enter the language key (e.g., python, javascript):");
+			// eslint-disable-next-line no-alert -- prompt is the simplest way to get a language key from the user
+			const langKey = prompt("Enter the language key, such as python or javascript:");
 			if (!langKey) return;
 			const key = langKey.trim().toLowerCase();
 			if (!key) return;
@@ -269,7 +267,7 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 				displayName: key.charAt(0).toUpperCase() + key.slice(1),
 				aliases: [],
 			};
-			plugin.saveSettings().then(() => {
+			void plugin.saveSettings().then(() => {
 				plugin.updateCSS();
 				this.display();
 			});
@@ -281,7 +279,7 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 			type: "text",
 			placeholder: "Search languages...",
 			cls: "sf-lang-search",
-		}) as HTMLInputElement;
+		});
 
 		// Language list container
 		const listContainer = contentEl.createDiv("sf-lang-list-container");
@@ -321,30 +319,31 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 
 				// Icon preview
 				const iconPreview = item.createDiv("sf-lang-icon-preview");
-				const iconsList = (
-					(window as any).SFIconManager?.getIcons() ?? []
-				) as LanguageIcon[];
+				const iconsList = (window.SFIconManager?.getIcons() ?? []) as LanguageIcon[];
 				if (config.icon) {
 					const icon = iconsList.find((i) => i.id === config.icon);
 					if (icon) {
 						const iconSizeRaw = config.iconSize || icon.backgroundSize || null;
 						const iconSizeValue = getCodeBlockIconSizeValue(iconSizeRaw);
 						if (icon.isColored) {
-							iconPreview.style.backgroundImage = icon.dataUrl;
-							iconPreview.style.backgroundSize = iconSizeValue;
-							iconPreview.style.backgroundRepeat = "no-repeat";
-							iconPreview.style.backgroundPosition = "center";
+							iconPreview.setCssStyles({
+								backgroundImage: icon.dataUrl,
+								backgroundSize: iconSizeValue,
+								backgroundRepeat: "no-repeat",
+								backgroundPosition: "center",
+							});
 						} else {
-							iconPreview.style.setProperty("-webkit-mask-image", icon.dataUrl);
-							iconPreview.style.setProperty("mask-image", icon.dataUrl);
-							iconPreview.style.setProperty("-webkit-mask-size", iconSizeValue);
-							iconPreview.style.setProperty("mask-size", iconSizeValue);
-							iconPreview.style.setProperty("-webkit-mask-repeat", "no-repeat");
-							iconPreview.style.setProperty("mask-repeat", "no-repeat");
-							iconPreview.style.setProperty("-webkit-mask-position", "center");
-							iconPreview.style.setProperty("mask-position", "center");
-							iconPreview.style.backgroundColor =
-								config.languageColor || config.color || "#6c757d";
+							iconPreview.setCssProps({
+								"--icon-mask-image": icon.dataUrl,
+								"--icon-mask-size": iconSizeValue,
+							});
+							iconPreview.setCssStyles({
+								maskImage: "var(--icon-mask-image)",
+								maskSize: "var(--icon-mask-size)",
+								maskRepeat: "no-repeat",
+								maskPosition: "center",
+								backgroundColor: config.languageColor || config.color || "#6c757d",
+							});
 						}
 						applyIconZoomStyles(iconPreview, iconSizeRaw);
 					}
@@ -409,7 +408,8 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 					cls: "sf-delete-btn",
 					attr: { type: "button" },
 				});
-				deleteBtn.addEventListener("click", async () => {
+				deleteBtn.addEventListener("click", () => { void (async () => {
+					// eslint-disable-next-line no-alert -- confirm is the simplest way to verify destructive action
 					const confirmed = confirm(
 						`Delete language "${config.displayName || key}"? This cannot be undone.`,
 					);
@@ -418,7 +418,7 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 					await plugin.saveSettings();
 					plugin.updateCSS();
 					renderLanguageList(searchInput.value);
-				});
+				})(); });
 			}
 		};
 
@@ -433,9 +433,9 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 		// Dynamic import to avoid circular dependency issues at load time.
 		// The CodeBlockLanguageModal is expected to be available in language-modal.ts.
 		try {
-			// eslint-disable-next-line @typescript-eslint/no-var-requires
-			const { CodeBlockLanguageModal } = require("./language-modal");
-			const modal = new CodeBlockLanguageModal(this.app, this.plugin, {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports -- dynamic import to break circular dependency
+			const languageModalModule = require("./language-modal") as { CodeBlockLanguageModal: typeof import("./language-modal").CodeBlockLanguageModal };
+			const modal = new languageModalModule.CodeBlockLanguageModal(this.app, this.plugin, {
 				key,
 				config,
 				onSave: async (updatedConfig: CodeBlockLanguageConfig) => {
@@ -462,19 +462,19 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 
 		new Setting(contentEl).setName("Custom CSS").setHeading();
 		contentEl.createEl("p", {
-			text: "Add custom CSS to override code block styles. Changes are applied when you click Save.",
+			text: "Add custom CSS to override code block styles. Changes are applied when you click save.",
 			cls: "sf-hint",
 		});
 
 		// Help toggle
 		const helpToggle = contentEl.createEl("button", {
-			text: "Show CSS Variables Reference",
+			text: "Show CSS variables reference",
 			cls: "sf-help-toggle",
 			attr: { type: "button" },
 		});
 
 		const helpContent = contentEl.createDiv("sf-help-content");
-		helpContent.style.display = "none";
+		helpContent.setCssStyles({ display: "none" });
 
 		new Setting(helpContent).setName("Available CSS variables").setHeading();
 		const varList = helpContent.createEl("ul", { cls: "sf-css-var-list" });
@@ -513,10 +513,10 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 		let helpVisible = false;
 		helpToggle.addEventListener("click", () => {
 			helpVisible = !helpVisible;
-			helpContent.style.display = helpVisible ? "block" : "none";
+			helpContent.setCssStyles({ display: helpVisible ? "block" : "none" });
 			helpToggle.textContent = helpVisible
-				? "Hide CSS Variables Reference"
-				: "Show CSS Variables Reference";
+				? "Hide CSS variables reference"
+				: "Show CSS variables reference";
 		});
 
 		// CSS textarea
@@ -525,9 +525,9 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 			attr: {
 				rows: "20",
 				spellcheck: "false",
-				placeholder: "/* Enter your custom CSS here */",
+				placeholder: "/* enter your custom CSS here */",
 			},
-		}) as HTMLTextAreaElement;
+		});
 		textarea.value = settings.customCSS || "";
 
 		// Action buttons
@@ -538,23 +538,23 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 			cls: "sf-save-btn",
 			attr: { type: "button" },
 		});
-		saveBtn.addEventListener("click", async () => {
+		saveBtn.addEventListener("click", () => { void (async () => {
 			settings.customCSS = textarea.value;
 			await plugin.saveSettings();
 			plugin.updateCSS();
 			new Notice("Custom CSS saved and applied.");
-		});
+		})(); });
 
 		const importBtn = actionRow.createEl("button", {
-			text: "Import from Snippet File",
+			text: "Import from snippet file",
 			cls: "sf-import-btn",
 			attr: { type: "button" },
 		});
-		importBtn.addEventListener("click", async () => {
+		importBtn.addEventListener("click", () => {
 			const fileInput = document.createElement("input");
 			fileInput.type = "file";
 			fileInput.accept = ".css";
-			fileInput.addEventListener("change", async () => {
+			fileInput.addEventListener("change", () => { void (async () => {
 				const file = fileInput.files?.[0];
 				if (!file) return;
 				try {
@@ -567,7 +567,7 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 				} catch {
 					new Notice("Failed to read the CSS file.");
 				}
-			});
+			})(); });
 			fileInput.click();
 		});
 	}

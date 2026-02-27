@@ -9,6 +9,20 @@ import {
 	resolveLanguageConfig,
 } from "./languages";
 
+const COPY_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+const CHECK_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+function setSvgIcon(el: HTMLElement, svgString: string): void {
+	el.empty();
+	const temp = createDiv();
+	// eslint-disable-next-line @microsoft/sdl/no-inner-html -- parsing trusted static SVG constant
+	temp.innerHTML = svgString;
+	const svg = temp.firstElementChild;
+	if (svg) {
+		el.appendChild(svg);
+	}
+}
+
 export function applyTitleToHeader(
 	header: HTMLElement | null,
 	title?: string,
@@ -22,14 +36,13 @@ export function applyTitleToHeader(
 		header;
 	let titleEl = header.querySelector<HTMLElement>(".sf-codeblock-title");
 	if (!titleEl) {
-		titleEl = document.createElement("span");
-		titleEl.className = "sf-codeblock-title";
+		titleEl = createSpan({ cls: "sf-codeblock-title" });
 		leftSection.appendChild(titleEl);
 	}
 	titleEl.textContent = title;
 	if (titleColor) {
-		titleEl.style.color = titleColor;
-		header.style.setProperty("--sf-cb-title-color", titleColor);
+		titleEl.setCssStyles({ color: titleColor });
+		header.setCssProps({ "--sf-cb-title-color": titleColor });
 	}
 }
 
@@ -84,11 +97,13 @@ export function updateCodeBlockHeaderStyles(
 	const borderColor = langConfig?.config?.borderColor || languageColor;
 
 	wrapper.setAttribute("data-lang", params.language || "");
-	wrapper.style.setProperty("--sf-cb-border-color", borderColor);
+	wrapper.setCssProps({ "--sf-cb-border-color": borderColor });
 
-	header.style.setProperty("--sf-cb-language-color", languageColor);
-	header.style.setProperty("--sf-cb-title-color", titleColor);
-	header.style.setProperty("--sf-cb-border-color", borderColor);
+	header.setCssProps({
+		"--sf-cb-language-color": languageColor,
+		"--sf-cb-title-color": titleColor,
+		"--sf-cb-border-color": borderColor,
+	});
 
 	const langEl = header.querySelector<HTMLElement>(".sf-codeblock-language");
 	if (langEl) {
@@ -97,19 +112,17 @@ export function updateCodeBlockHeaderStyles(
 			langConfig?.name ||
 			params.language ||
 			"";
-		langEl.style.color = languageColor;
+		langEl.setCssStyles({ color: languageColor });
 	}
 
 	const titleEl = header.querySelector<HTMLElement>(".sf-codeblock-title");
 	if (params.title) {
 		if (titleEl) {
 			titleEl.textContent = params.title;
-			titleEl.style.color = titleColor;
+			titleEl.setCssStyles({ color: titleColor });
 		} else {
-			const titleNode = document.createElement("span");
-			titleNode.className = "sf-codeblock-title";
-			titleNode.textContent = params.title;
-			titleNode.style.color = titleColor;
+			const titleNode = createSpan({ cls: "sf-codeblock-title", text: params.title });
+			titleNode.setCssStyles({ color: titleColor });
 			header
 				.querySelector<HTMLElement>(".sf-codeblock-header-left")
 				?.appendChild(titleNode);
@@ -129,17 +142,11 @@ export function updateCodeBlockHeaderStyles(
 	if (iconEl && icon) {
 		applyIconZoomStyles(iconEl, iconSizeRaw);
 		if (icon.isColored) {
-			iconEl.style.backgroundImage = icon.dataUrl;
+			iconEl.setCssProps({ "--icon-bg-image": icon.dataUrl, "--icon-bg-size": iconSizeValue, "--icon-bg-color": "transparent" });
 			iconEl.classList.add("sf-codeblock-icon-colored");
-			iconEl.style.backgroundSize = iconSizeValue;
-			iconEl.style.backgroundColor = "transparent";
 		} else {
 			iconEl.classList.remove("sf-codeblock-icon-colored");
-			iconEl.style.setProperty("-webkit-mask-image", icon.dataUrl);
-			iconEl.style.setProperty("mask-image", icon.dataUrl);
-			iconEl.style.setProperty("-webkit-mask-size", iconSizeValue);
-			iconEl.style.setProperty("mask-size", iconSizeValue);
-			iconEl.style.backgroundColor = languageColor;
+			iconEl.setCssProps({ "--icon-mask-image": icon.dataUrl, "--icon-mask-size": iconSizeValue, "--icon-bg-color": languageColor });
 		}
 	}
 }
@@ -199,8 +206,7 @@ export function applyIconZoomStyles(
 		return;
 	}
 	const scale = getCodeBlockIconScaleValue(rawSize);
-	el.style.setProperty("transform-origin", "center");
-	el.style.setProperty("transform", `scale(${scale})`);
+	el.setCssStyles({ transformOrigin: "center", transform: `scale(${scale})` });
 }
 
 export function createCodeBlockHeader(
@@ -221,66 +227,51 @@ export function createCodeBlockHeader(
 		params.titleColor || langConfig?.config?.titleColor || languageColor;
 	const borderColor = langConfig?.config?.borderColor || languageColor;
 
-	header.style.setProperty("--sf-cb-language-color", languageColor);
-	header.style.setProperty("--sf-cb-title-color", titleColor);
-	header.style.setProperty("--sf-cb-border-color", borderColor);
+	header.setCssProps({
+		"--sf-cb-language-color": languageColor,
+		"--sf-cb-title-color": titleColor,
+		"--sf-cb-border-color": borderColor,
+	});
 
-	const leftSection = document.createElement("div");
-	leftSection.className = "sf-codeblock-header-left";
+	const leftSection = createDiv({ cls: "sf-codeblock-header-left" });
 
 	if (icon) {
 		const iconSizeRaw =
 			langConfig?.config?.iconSize || icon?.backgroundSize || null;
 		const iconSizeValue = getCodeBlockIconSizeValue(iconSizeRaw);
-		const iconEl = document.createElement("span");
-		iconEl.className = "sf-codeblock-icon";
+		const iconEl = createSpan({ cls: "sf-codeblock-icon" });
 		applyIconZoomStyles(iconEl, iconSizeRaw);
 		if (icon.isColored) {
-			iconEl.style.backgroundImage = icon.dataUrl;
+			iconEl.setCssProps({ "--icon-bg-image": icon.dataUrl, "--icon-bg-size": iconSizeValue, "--icon-bg-color": "transparent" });
 			iconEl.classList.add("sf-codeblock-icon-colored");
-			iconEl.style.backgroundSize = iconSizeValue;
-			iconEl.style.backgroundColor = "transparent";
 		} else {
-			iconEl.style.setProperty("-webkit-mask-image", icon.dataUrl);
-			iconEl.style.setProperty("mask-image", icon.dataUrl);
-			iconEl.style.setProperty("-webkit-mask-size", iconSizeValue);
-			iconEl.style.setProperty("mask-size", iconSizeValue);
-			iconEl.style.backgroundColor = languageColor;
+			iconEl.setCssProps({ "--icon-mask-image": icon.dataUrl, "--icon-mask-size": iconSizeValue, "--icon-bg-color": languageColor });
 		}
 		leftSection.appendChild(iconEl);
 	}
 
 	if (params.language) {
-		const langEl = document.createElement("span");
-		langEl.className = "sf-codeblock-language";
-		langEl.textContent =
-			langConfig?.config?.displayName ||
-			langConfig?.name ||
-			params.language;
-		langEl.style.color = languageColor;
+		const langEl = createSpan({ cls: "sf-codeblock-language", text: langConfig?.config?.displayName || langConfig?.name || params.language });
+		langEl.setCssStyles({ color: languageColor });
 		leftSection.appendChild(langEl);
 	}
 
 	if (params.title) {
-		const titleEl = document.createElement("span");
-		titleEl.className = "sf-codeblock-title";
-		titleEl.textContent = params.title;
-		titleEl.style.color = titleColor;
+		const titleEl = createSpan({ cls: "sf-codeblock-title", text: params.title });
+		titleEl.setCssStyles({ color: titleColor });
 		leftSection.appendChild(titleEl);
 	}
 
 	header.appendChild(leftSection);
 
 	if (settings.showCopyButton) {
-		const rightSection = document.createElement("div");
-		rightSection.className = "sf-codeblock-header-right";
+		const rightSection = createDiv({ cls: "sf-codeblock-header-right" });
 
-		const copyBtn = document.createElement("button");
-		copyBtn.className = "sf-codeblock-copy";
-		copyBtn.setAttribute("aria-label", "Copy code");
-		copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
-		copyBtn.setAttribute("data-copied", "false");
-		rightSection.appendChild(copyBtn);
+		const copyBtn = rightSection.createEl("button", {
+			cls: "sf-codeblock-copy",
+			attr: { "aria-label": "Copy code", "data-copied": "false" },
+		});
+		setSvgIcon(copyBtn, COPY_ICON_SVG);
 
 		header.appendChild(rightSection);
 	}
@@ -309,14 +300,17 @@ export function createLineWrapper(
 		line.appendChild(lineNumEl);
 	}
 
-	const lineContent = document.createElement("span");
-	lineContent.className = "sf-codeblock-line-content";
+	const lineContent = createSpan({ cls: "sf-codeblock-line-content" });
 	if (typeof content === "string") {
-		lineContent.innerHTML = content || "&nbsp;";
+		if (content) {
+			lineContent.setText(content);
+		} else {
+			lineContent.setText("\u00A0");
+		}
 	} else if (content) {
 		lineContent.appendChild(content);
 	} else {
-		lineContent.innerHTML = "&nbsp;";
+		lineContent.setText("\u00A0");
 	}
 	line.appendChild(lineContent);
 
@@ -330,11 +324,11 @@ export async function copyCodeToClipboard(
 	try {
 		await navigator.clipboard.writeText(code);
 		button.setAttribute("data-copied", "true");
-		button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+		setSvgIcon(button, CHECK_ICON_SVG);
 
 		setTimeout(() => {
 			button.setAttribute("data-copied", "false");
-			button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+			setSvgIcon(button, COPY_ICON_SVG);
 		}, 2000);
 	} catch (err) {
 		console.error("Failed to copy code:", err);
