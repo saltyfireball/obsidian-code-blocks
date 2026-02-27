@@ -60,3 +60,29 @@ export function sanitizeCssValue(value?: string | null): string {
 	if (!value) return "";
 	return value.replace(/[{}<>;@\\]/g, "").trim();
 }
+
+/**
+ * Deep merge two objects. Values from `source` override `target`.
+ * Arrays are replaced, not merged.
+ */
+export function deepMerge<T extends Record<string, any>>(target: T, source: Partial<T>): T {
+	const result: Record<string, any> = { ...target };
+	for (const key of Object.keys(source)) {
+		const sourceVal = (source as Record<string, any>)[key];
+		const targetVal = (target as Record<string, any>)[key];
+		if (
+			sourceVal !== null &&
+			sourceVal !== undefined &&
+			typeof sourceVal === "object" &&
+			!Array.isArray(sourceVal) &&
+			typeof targetVal === "object" &&
+			targetVal !== null &&
+			!Array.isArray(targetVal)
+		) {
+			result[key] = deepMerge(targetVal, sourceVal);
+		} else if (sourceVal !== undefined) {
+			result[key] = sourceVal;
+		}
+	}
+	return result as T;
+}
