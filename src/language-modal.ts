@@ -54,14 +54,28 @@ function createInputRow(
 // Modal
 // ---------------------------------------------------------------------------
 
+interface LanguageModalOptions {
+	key: string;
+	config?: CodeBlockLanguageConfig;
+	onSave?: (updatedConfig: CodeBlockLanguageConfig) => Promise<void>;
+}
+
 export class CodeBlockLanguageModal extends Modal {
 	private plugin: CodeBlocksPluginType;
 	private editingLanguage: string | undefined;
+	private initialConfig: CodeBlockLanguageConfig | undefined;
+	private onSaveCallback: ((config: CodeBlockLanguageConfig) => Promise<void>) | undefined;
 
-	constructor(app: App, plugin: CodeBlocksPluginType, language?: string) {
+	constructor(app: App, plugin: CodeBlocksPluginType, options?: string | LanguageModalOptions) {
 		super(app);
 		this.plugin = plugin;
-		this.editingLanguage = language;
+		if (typeof options === "string") {
+			this.editingLanguage = options;
+		} else if (options) {
+			this.editingLanguage = options.key;
+			this.initialConfig = options.config;
+			this.onSaveCallback = options.onSave;
+		}
 	}
 
 	onOpen(): void {
@@ -70,9 +84,8 @@ export class CodeBlockLanguageModal extends Modal {
 		contentEl.addClass("sf-codeblock-lang-modal");
 
 		const isEditing = !!this.editingLanguage;
-		const existing: CodeBlockLanguageConfig | undefined = isEditing
-			? this.plugin.settings.languages[this.editingLanguage!]
-			: undefined;
+		const existing: CodeBlockLanguageConfig | undefined = this.initialConfig
+			?? (isEditing ? this.plugin.settings.languages[this.editingLanguage!] : undefined);
 
 		contentEl.createEl("h2", {
 			text: isEditing ? "Edit Language" : "Add Language",
@@ -190,23 +203,28 @@ export class CodeBlockLanguageModal extends Modal {
 				color: languageColorPicker.getValue() || null,
 			};
 
-			// If editing and the key changed, remove the old entry
-			if (
-				isEditing &&
-				this.editingLanguage &&
-				this.editingLanguage !== rawKey
-			) {
-				delete this.plugin.settings.languages[this.editingLanguage];
+			if (this.onSaveCallback) {
+				await this.onSaveCallback(newConfig);
+			} else {
+				// If editing and the key changed, remove the old entry
+				if (
+					isEditing &&
+					this.editingLanguage &&
+					this.editingLanguage !== rawKey
+				) {
+					delete this.plugin.settings.languages[this.editingLanguage];
+				}
+
+				this.plugin.settings.languages[rawKey] = newConfig;
+				await this.plugin.saveSettings();
+				this.plugin.updateCSS();
+
+				if (this.plugin.settingsTab) {
+					this.plugin.settingsTab.display();
+				}
 			}
 
-			this.plugin.settings.languages[rawKey] = newConfig;
-			await this.plugin.saveSettings();
-			this.plugin.updateCSS();
 			this.close();
-
-			if (this.plugin.settingsTab) {
-				this.plugin.settingsTab.display();
-			}
 		});
 	}
 
