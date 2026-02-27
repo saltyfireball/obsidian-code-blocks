@@ -1,0 +1,1107 @@
+/* ============================================================================
+   Settings Tab Bar
+   ============================================================================ */
+
+.sf-tab-bar {
+	display: flex;
+	gap: 4px;
+	margin-bottom: 1.5em;
+	padding: 4px;
+	background: var(--background-secondary);
+	border-radius: 8px;
+	flex-wrap: wrap;
+}
+
+.sf-tab-button {
+	padding: 8px 16px;
+	border: none;
+	background: transparent;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 0.9em;
+	color: var(--text-muted);
+	transition: all 0.15s ease;
+}
+
+.sf-tab-button:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.sf-tab-button-active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.sf-tab-button-active:hover {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+/* ============================================================================
+   General Settings UI
+   ============================================================================ */
+
+.sf-setting-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 0;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.sf-setting-info {
+	flex: 1;
+	min-width: 0;
+}
+
+.sf-setting-name {
+	font-weight: 500;
+	color: var(--text-normal);
+}
+
+.sf-setting-desc {
+	font-size: 0.85em;
+	color: var(--text-muted);
+	margin-top: 4px;
+}
+
+.sf-setting-control {
+	flex-shrink: 0;
+	margin-left: 16px;
+}
+
+.sf-toggle {
+	width: 18px;
+	height: 18px;
+}
+
+.sf-color-setting-control {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.sf-color-text-input-small {
+	width: 100px;
+	padding: 4px 8px;
+	font-family: var(--font-monospace);
+	font-size: 0.85em;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background: var(--background-primary);
+	color: var(--text-normal);
+}
+
+.sf-color-clear-btn {
+	padding: 6px 10px;
+	font-size: 0.8em;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	color: var(--text-muted);
+	cursor: pointer;
+}
+
+.sf-color-clear-btn:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+/* Ignore languages tag display */
+.sf-ignore-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-top: 8px;
+}
+
+.sf-ignore-tag {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 4px 8px;
+	background: var(--background-secondary);
+	border-radius: 6px;
+	font-size: 0.85em;
+	color: var(--text-normal);
+}
+
+.sf-ignore-tag-remove {
+	background: none;
+	border: none;
+	color: var(--text-muted);
+	cursor: pointer;
+	padding: 0 2px;
+	font-size: 1.1em;
+	line-height: 1;
+}
+
+.sf-ignore-tag-remove:hover {
+	color: var(--text-error);
+}
+
+.sf-hint {
+	color: var(--text-muted);
+	font-size: 0.85em;
+	margin-bottom: 1em;
+}
+
+.sf-empty-message {
+	color: var(--text-muted);
+	font-style: italic;
+}
+
+/* ============================================================================
+   Code Block Language Settings
+   ============================================================================ */
+
+.sf-lang-details {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.85em;
+	color: var(--text-muted);
+}
+
+.sf-lang-details .sf-color-swatch {
+	width: 14px;
+	height: 14px;
+	border-radius: 3px;
+	flex-shrink: 0;
+}
+
+.sf-muted {
+	color: var(--text-muted);
+	font-size: 0.9em;
+}
+
+/* CSS Editor for Code Blocks */
+.sf-css-editor {
+	margin: 1em 0;
+}
+
+.sf-css-textarea {
+	width: 100%;
+	min-height: 300px;
+	padding: 12px;
+	font-family: var(--font-monospace);
+	font-size: 0.9em;
+	line-height: 1.5;
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	color: var(--text-normal);
+	resize: vertical;
+	tab-size: 2;
+}
+
+.sf-css-textarea:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+}
+
+/* Help Section */
+.sf-help-section {
+	margin-bottom: 1.5em;
+}
+
+.sf-help-toggle {
+	font-size: 0.9em;
+	padding: 6px 12px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	cursor: pointer;
+	color: var(--text-muted);
+}
+
+.sf-help-toggle:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.sf-help-content {
+	margin-top: 12px;
+	padding: 16px;
+	background: var(--background-secondary);
+	border-radius: 8px;
+	font-size: 0.9em;
+}
+
+.sf-help-content h4 {
+	margin-top: 0;
+	margin-bottom: 12px;
+	color: var(--text-normal);
+}
+
+.sf-help-content ul {
+	margin: 8px 0;
+	padding-left: 20px;
+}
+
+.sf-help-content li {
+	margin: 4px 0;
+}
+
+.sf-help-content code {
+	background: var(--background-primary);
+	padding: 2px 6px;
+	border-radius: 3px;
+	font-size: 0.9em;
+}
+
+.sf-help-content p {
+	margin: 12px 0 4px 0;
+}
+
+.sf-help-content p strong {
+	color: var(--text-accent);
+}
+
+/* ============================================================================
+   Code Block Language Modal
+   ============================================================================ */
+
+.sf-codeblock-lang-modal {
+	max-width: 550px;
+}
+
+.sf-form-row {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-bottom: 12px;
+}
+
+.sf-form-row label {
+	font-size: 0.9em;
+	color: var(--text-muted);
+}
+
+.sf-form-row input[type="text"] {
+	padding: 6px 10px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background: var(--background-primary);
+	color: var(--text-normal);
+	font-size: 0.9em;
+}
+
+.sf-modal-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 16px;
+}
+
+/* Border swatch indicator in language list */
+.sf-border-swatch {
+	margin-left: 4px;
+	border: 2px solid var(--background-primary);
+	box-shadow: 0 0 0 1px var(--background-modifier-border);
+}
+
+/* Icon list (reused for languages) */
+.sf-icon-search {
+	width: 100%;
+	padding: 8px 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	background: var(--background-primary);
+	color: var(--text-normal);
+	font-size: 0.9em;
+	margin-bottom: 12px;
+}
+
+.sf-icon-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-top: 12px;
+}
+
+.sf-icon-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 10px;
+	background: var(--background-secondary);
+	border-radius: 8px;
+}
+
+.sf-icon-item-preview {
+	width: 30px;
+	height: 30px;
+	min-width: 30px;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+}
+
+.sf-icon-item-info {
+	flex: 1;
+	min-width: 0;
+}
+
+.sf-icon-item-actions {
+	display: flex;
+	gap: 6px;
+	flex-shrink: 0;
+}
+
+/* Icon picker grid (used in language modal) */
+.sf-icon-picker-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+	gap: 6px;
+	max-height: 200px;
+	overflow-y: auto;
+	padding: 8px;
+	background: var(--background-secondary);
+	border-radius: 8px;
+	border: 1px solid var(--background-modifier-border);
+	margin-top: 4px;
+}
+
+.sf-icon-picker-item {
+	width: 36px;
+	height: 36px;
+	border-radius: 6px;
+	border: 2px solid transparent;
+	cursor: pointer;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+	transition: border-color 0.15s ease, transform 0.1s ease;
+}
+
+.sf-icon-picker-item:hover {
+	transform: scale(1.1);
+}
+
+.sf-icon-picker-item.sf-selected {
+	border-color: var(--interactive-accent);
+}
+
+/* ============================================================================
+   Code Block Styling - Reading View
+   ============================================================================ */
+
+/* Wrapper container */
+.sf-codeblock-wrapper {
+	--sf-cb-language-color: #6c757d;
+	--sf-cb-title-color: var(--sf-cb-language-color);
+	--sf-cb-border-color: var(--sf-cb-language-color);
+	--sf-cb-background: var(--code-background);
+
+	position: relative;
+	margin: 1em 0;
+	border-radius: 8px;
+	overflow: hidden;
+	background: var(--sf-cb-background);
+	border-left: 4px solid var(--sf-cb-border-color);
+}
+
+/* Hide Obsidian's native copy button when we have our own */
+.sf-codeblock-wrapper .copy-code-button,
+.sf-codeblock-wrapper + .copy-code-button,
+.sf-codeblock-pre + .copy-code-button,
+.sf-codeblock-wrapper pre .copy-code-button,
+.sf-codeblock-wrapper pre ~ .copy-code-button,
+.sf-codeblock-wrapper ~ .copy-code-button,
+.markdown-preview-view .sf-codeblock-wrapper .copy-code-button {
+	display: none !important;
+}
+
+.markdown-preview-view pre:has(.sf-codeblock-decorated) + .copy-code-button,
+.markdown-preview-view .sf-codeblock-wrapper + .copy-code-button {
+	display: none !important;
+}
+
+/* Header */
+.sf-codeblock-header {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	padding: 8px 12px;
+	background: var(--background-secondary);
+	border-bottom: 1px solid var(--background-modifier-border);
+	font-size: 0.85em;
+	gap: 8px;
+}
+
+.callout-content .sf-codeblock-header-left {
+	padding-left: 0px !important;
+}
+
+.sf-codeblock-header-left {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 6px;
+	flex: 1;
+	min-width: 0;
+	margin-left: -6px !important;
+}
+
+.sf-codeblock-header-right {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 4px;
+	flex-shrink: 0;
+	margin-left: auto;
+}
+
+/* Icon */
+.sf-codeblock-icon {
+	display: inline-block;
+	width: 30px !important;
+	height: 30px !important;
+	min-width: 30px !important;
+	flex-shrink: 0;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	transform-origin: center;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+}
+
+.sf-codeblock-icon-colored {
+	-webkit-mask-image: none !important;
+	mask-image: none !important;
+	background-color: transparent !important;
+}
+
+/* Language name */
+.sf-codeblock-language {
+	font-weight: 600;
+	color: var(--sf-cb-language-color);
+	white-space: nowrap;
+}
+
+/* Title */
+.sf-codeblock-title {
+	color: var(--sf-cb-title-color);
+	opacity: 0.9;
+	font-style: italic;
+	margin-left: 8px;
+}
+
+/* Copy button */
+.sf-codeblock-copy {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	color: var(--text-muted);
+	cursor: pointer;
+	transition: all 0.15s ease;
+	flex-shrink: 0;
+}
+
+.sf-codeblock-copy:hover {
+	background: var(--background-modifier-hover);
+	border-color: var(--background-modifier-border);
+	color: var(--text-normal);
+}
+
+.sf-codeblock-copy[data-copied="true"] {
+	color: var(--text-success, #10b981);
+}
+
+/* Pre element styling */
+.sf-codeblock-pre {
+	margin: 0 !important;
+	border-radius: 0 !important;
+	border: none !important;
+	background: transparent !important;
+}
+
+.sf-codeblock-wrapper .sf-codeblock-pre code {
+	display: block;
+	padding: 12px;
+	background: transparent;
+	line-height: 1.4;
+}
+
+/* ============================================================================
+   Code Block Line Numbers - Gutter-based approach (Reading View)
+   ============================================================================ */
+
+.sf-codeblock-code {
+	display: block;
+	white-space: pre;
+	word-break: normal;
+	overflow-wrap: normal;
+	line-height: 1.4;
+}
+
+.sf-codeblock-pre.sf-codeblock-with-gutter {
+	display: flex !important;
+	flex-direction: row !important;
+	align-items: flex-start;
+}
+
+.sf-codeblock-pre.sf-codeblock-with-gutter > code {
+	flex: 1;
+	min-width: 0;
+	padding-left: 8px !important;
+}
+
+.sf-codeblock-gutter {
+	flex-shrink: 0;
+	padding-right: 6px;
+	padding-left: 0;
+	border-right: 1px solid var(--background-modifier-border);
+	user-select: none;
+	text-align: right;
+	color: var(--text-faint);
+	font-family: var(--font-monospace);
+	white-space: pre;
+	opacity: 0.6;
+}
+
+.sf-codeblock-gutter-line {
+	display: block;
+	opacity: 0.6;
+	line-height: inherit;
+}
+
+.sf-codeblock-line {
+	display: flex;
+	flex-direction: row;
+	min-height: 1.4em;
+	line-height: 1.4;
+}
+
+.sf-codeblock-line-number {
+	flex-shrink: 0;
+	width: 3em;
+	min-width: 3em;
+	padding-right: 1em;
+	text-align: right;
+	color: var(--text-faint);
+	user-select: none;
+	font-size: 0.9em;
+	opacity: 0.6;
+}
+
+.sf-codeblock-line-content {
+	flex: 1;
+	min-width: 0;
+	white-space: pre;
+	word-break: normal;
+	overflow-wrap: normal;
+}
+
+/* Highlighted lines */
+.sf-codeblock-line-highlighted {
+	background: color-mix(in srgb, var(--sf-cb-border-color) 20%, transparent);
+	margin: 0 -12px;
+	padding: 0 12px;
+}
+
+.sf-codeblock-line-highlighted .sf-codeblock-line-number {
+	opacity: 1;
+	color: var(--sf-cb-border-color);
+}
+
+/* ============================================================================
+   Code Block Styling - Edit View (CodeMirror 6)
+   ============================================================================ */
+
+.sf-codeblock-header-cm6 {
+	margin-left: 0;
+	margin-right: 0;
+	margin-bottom: 0;
+	border-radius: 8px 8px 0 0;
+	border-left: none;
+	border-bottom: 1px solid var(--background-modifier-border);
+	position: relative;
+	width: 100%;
+}
+
+.cm-editor .sf-codeblock-header {
+	display: flex !important;
+	flex-direction: row !important;
+	align-items: center !important;
+	justify-content: space-between !important;
+	gap: 8px !important;
+	width: 100% !important;
+}
+
+.cm-editor .sf-codeblock-header-left {
+	display: flex !important;
+	flex-direction: row !important;
+	align-items: center !important;
+	padding-left: 5px !important;
+}
+
+.callout-content .cm-editor .sf-codeblock-header-left {
+	padding-left: 10px !important;
+}
+
+.cm-editor .sf-codeblock-wrapper .sf-codeblock-header-left {
+	padding-left: 10px !important;
+}
+
+.cm-editor .sf-codeblock-header-right {
+	display: flex !important;
+	flex-direction: row !important;
+	margin-left: auto !important;
+}
+
+/* Source mode overrides */
+body.sf-source-mode .markdown-source-view .sf-codeblock-header-cm6,
+body.sf-source-mode .markdown-source-view .sf-codeblock-header,
+body.sf-source-mode .markdown-source-view .sf-codeblock-header-right,
+body.sf-source-mode .markdown-source-view .sf-codeblock-icon,
+body.sf-source-mode .markdown-source-view .sf-codeblock-title {
+	display: none !important;
+}
+
+body.sf-source-mode .markdown-source-view .cm-editor .sf-codeblock-wrapper {
+	border: none !important;
+	background: transparent !important;
+}
+
+body.sf-source-mode .markdown-source-view .cm-line.sf-codeblock-fence-start,
+body.sf-source-mode .markdown-source-view .cm-line.sf-codeblock-content-line,
+body.sf-source-mode .markdown-source-view .cm-line.sf-codeblock-fence-end {
+	border-left: none !important;
+	padding-left: 0 !important;
+	box-shadow: none !important;
+}
+
+body.sf-source-mode .markdown-source-view .cm-editor .sf-codeblock-line-number,
+body.sf-source-mode .markdown-source-view .cm-editor .sf-codeblock-line-highlighted,
+body.sf-source-mode .markdown-source-view .cm-editor .sf-codeblock-line {
+	border-left: none !important;
+}
+
+/* Line decorations for code block content */
+.cm-line.sf-codeblock-fence-start {
+	border-left: 4px solid var(--sf-cb-border-color, #6c757d);
+	margin-left: 0;
+	padding-left: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 0;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.cm-line.sf-codeblock-fence-start > .sf-codeblock-header-cm6 {
+	order: 0;
+	margin-top: -18px;
+	margin-left: -15px;
+}
+
+.code-block-flair {
+	display: none !important;
+}
+
+.cm-line.sf-codeblock-fence-start > :not(.sf-codeblock-header-cm6) {
+	order: 1;
+}
+
+.cm-line.sf-codeblock-content-line {
+	border-left: 4px solid var(--sf-cb-border-color, #6c757d);
+	margin-left: 0;
+	padding-left: 0;
+}
+
+/* ============================================================================
+   Edit Mode Line Numbers (Data Attribute Based)
+   ============================================================================ */
+
+body.sf-show-line-numbers .cm-line.sf-codeblock-content-line:not(.sf-ln-disabled),
+.cm-line.sf-codeblock-content-line.sf-ln-enabled {
+	position: relative;
+	padding-left: var(--sf-gutter-width, 3em) !important;
+}
+
+body.sf-show-line-numbers .cm-line.sf-codeblock-content-line:not(.sf-ln-disabled)::after,
+.cm-line.sf-codeblock-content-line.sf-ln-enabled::after {
+	content: "";
+	position: absolute;
+	left: 4px;
+	top: 0;
+	bottom: 0;
+	width: calc(var(--sf-gutter-width, 3em) - 1em);
+	background: var(--sf-cb-background, var(--code-background, var(--background-secondary)));
+	border-right: 1px solid var(--background-modifier-border);
+	pointer-events: none;
+}
+
+body.sf-show-line-numbers .cm-line.sf-codeblock-content-line:not(.sf-ln-disabled)::before,
+.cm-line.sf-codeblock-content-line.sf-ln-enabled::before {
+	content: attr(data-line-num);
+	position: absolute;
+	left: 4px;
+	top: 0;
+	width: calc(var(--sf-gutter-width, 3em) - 1.2em);
+	text-align: right;
+	padding-right: 0.4em;
+	color: var(--text-faint);
+	font-size: inherit;
+	line-height: inherit;
+	opacity: 0.6;
+	user-select: none;
+	pointer-events: none;
+	z-index: 1;
+}
+
+/* Hide line numbers in source mode */
+body.sf-source-mode .cm-line.sf-codeblock-content-line::before,
+body.sf-source-mode .cm-line.sf-codeblock-content-line::after {
+	display: none !important;
+}
+
+body.sf-source-mode .cm-line.sf-codeblock-content-line {
+	padding-left: 0 !important;
+}
+
+.cm-line.sf-codeblock-fence-end {
+	border-left: 4px solid var(--sf-cb-border-color, #6c757d);
+	margin-left: 0;
+	padding-left: 0;
+	border-radius: 0 0 0 8px;
+}
+
+/* ============================================================================
+   Code Block Styling - Callouts
+   ============================================================================ */
+
+.callout .sf-codeblock-wrapper {
+	margin: 0.5em 0;
+	background: var(--sf-cb-background);
+}
+
+.callout .sf-codeblock-header {
+	padding: 6px 10px;
+	font-size: 0.8em;
+}
+
+/* ============================================================================
+   Code Block Styling - Fallbacks
+   ============================================================================ */
+
+@supports not (background: color-mix(in srgb, red 50%, blue)) {
+	.sf-codeblock-line-highlighted {
+		background: rgba(128, 128, 128, 0.15);
+	}
+}
+
+/* ============================================================================
+   Code Block Styling - Mobile Adjustments
+   ============================================================================ */
+
+.is-mobile .sf-codeblock-header {
+	padding: 10px 12px;
+}
+
+.is-mobile .sf-codeblock-line-number {
+	width: 2.5em;
+	min-width: 2.5em;
+	padding-right: 0.75em;
+}
+
+/* ============================================================================
+   Syntax Highlighting (highlight.js) Settings
+   ============================================================================ */
+
+.sf-lang-search-container {
+	margin-bottom: 1em;
+}
+
+.sf-lang-search {
+	width: 100%;
+	padding: 8px 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	background: var(--background-primary);
+	color: var(--text-normal);
+	font-size: 0.9em;
+}
+
+.sf-lang-search:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+}
+
+.sf-lang-search::placeholder {
+	color: var(--text-muted);
+}
+
+.sf-lang-grid {
+	margin-top: 1em;
+}
+
+.sf-lang-count {
+	font-size: 0.85em;
+	color: var(--text-muted);
+	margin-bottom: 0.75em;
+}
+
+.sf-lang-list {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+	gap: 6px;
+	max-height: 300px;
+	overflow-y: auto;
+	padding: 8px;
+	background: var(--background-secondary);
+	border-radius: 8px;
+	border: 1px solid var(--background-modifier-border);
+}
+
+.sf-lang-item {
+	padding: 6px 10px;
+	background: var(--background-primary);
+	border-radius: 4px;
+	font-size: 0.85em;
+}
+
+.sf-lang-item code {
+	color: var(--text-normal);
+	font-family: var(--font-monospace);
+}
+
+.sf-highlighter-status {
+	margin-top: 1.5em;
+	padding: 12px 16px;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.sf-highlighter-enabled {
+	background: color-mix(in srgb, var(--text-success, #10b981) 15%, var(--background-secondary));
+	border: 1px solid color-mix(in srgb, var(--text-success, #10b981) 40%, transparent);
+}
+
+.sf-highlighter-enabled .sf-status-text {
+	color: var(--text-success, #10b981);
+	font-weight: 500;
+}
+
+.sf-highlighter-disabled {
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+}
+
+.sf-highlighter-disabled .sf-status-text {
+	color: var(--text-muted);
+}
+
+.is-mobile .sf-lang-list {
+	grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+	max-height: 250px;
+}
+
+.is-mobile .sf-lang-item {
+	padding: 8px 10px;
+	font-size: 0.9em;
+}
+
+/* ============================================================================
+   Color Picker Component
+   ============================================================================ */
+
+.cb-color-picker {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	width: 100%;
+	max-width: 520px;
+}
+
+.cb-color-picker-label {
+	font-size: 0.85em;
+	color: var(--text-muted);
+}
+
+.cb-color-picker-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.cb-color-swatch-wrapper {
+	position: relative;
+	width: 36px;
+	height: 36px;
+	min-width: 36px;
+}
+
+.cb-color-native-input {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+	cursor: pointer;
+	border: none;
+	padding: 0;
+}
+
+.cb-color-swatch {
+	display: block;
+	width: 36px;
+	height: 36px;
+	border-radius: 8px;
+	border: 2px solid var(--background-modifier-border);
+	cursor: pointer;
+	transition: border-color 0.15s ease, transform 0.1s ease;
+	pointer-events: none;
+}
+
+.cb-color-swatch-wrapper:hover .cb-color-swatch {
+	border-color: var(--interactive-accent);
+	transform: scale(1.05);
+}
+
+.cb-color-swatch:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 3px var(--interactive-accent);
+}
+
+.cb-color-swatch-empty {
+	background-image:
+		linear-gradient(45deg, var(--background-modifier-border) 25%, transparent 25%),
+		linear-gradient(-45deg, var(--background-modifier-border) 25%, transparent 25%),
+		linear-gradient(45deg, transparent 75%, var(--background-modifier-border) 75%),
+		linear-gradient(-45deg, transparent 75%, var(--background-modifier-border) 75%);
+	background-size: 8px 8px;
+	background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+}
+
+.cb-color-text-input {
+	flex: 1;
+	min-width: 0;
+	max-width: 280px;
+	padding: 6px 10px;
+	border-radius: 6px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	color: var(--text-normal);
+	font-size: 0.85em;
+	font-family: var(--font-monospace);
+}
+
+.cb-color-clear-btn {
+	width: 28px;
+	height: 28px;
+	min-width: 28px;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 6px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	color: var(--text-muted);
+	cursor: pointer;
+	font-size: 0.75em;
+	line-height: 1;
+	transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.cb-color-clear-btn:hover {
+	color: var(--text-error);
+	border-color: var(--text-error);
+}
+
+/* Opacity slider row */
+.cb-color-opacity-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 4px;
+}
+
+.cb-color-opacity-label {
+	font-size: 0.8em;
+	color: var(--text-muted);
+	min-width: 48px;
+}
+
+.cb-color-opacity-slider {
+	-webkit-appearance: none;
+	appearance: none;
+	flex: 1;
+	max-width: 200px;
+	height: 6px;
+	border-radius: 3px;
+	background: linear-gradient(
+		to right,
+		var(--interactive-accent) 0%,
+		var(--interactive-accent) var(--slider-progress, 100%),
+		var(--background-modifier-border) var(--slider-progress, 100%),
+		var(--background-modifier-border) 100%
+	);
+	outline: none;
+	cursor: pointer;
+}
+
+.cb-color-opacity-slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: var(--interactive-accent);
+	border: 2px solid var(--background-primary);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+	cursor: pointer;
+	transition: transform 0.1s ease;
+}
+
+.cb-color-opacity-slider::-webkit-slider-thumb:hover {
+	transform: scale(1.15);
+}
+
+.cb-color-opacity-slider::-moz-range-thumb {
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: var(--interactive-accent);
+	border: 2px solid var(--background-primary);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+	cursor: pointer;
+}
+
+.cb-color-opacity-value {
+	font-size: 0.8em;
+	color: var(--text-muted);
+	min-width: 36px;
+	text-align: right;
+	font-family: var(--font-monospace);
+}
