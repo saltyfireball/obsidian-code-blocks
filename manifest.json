@@ -1,0 +1,9 @@
+{
+	"id": "obsidian-code-blocks",
+	"name": "Code Blocks",
+	"version": "1.0.0",
+	"minAppVersion": "1.0.0",
+	"description": "Language-based code block styling with headers, icons, colors, line numbers, copy buttons, custom CSS, per-block parameter overrides, and highlight.js syntax highlighting with 5 built-in themes.",
+	"author": "saltyfireball",
+	"isDesktopOnly": false
+}
