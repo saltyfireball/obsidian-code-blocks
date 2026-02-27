@@ -11,11 +11,11 @@ declare global {
 		SFIconManager?: {
 			getIcons(): Array<{
 				id: string;
-				dataUrl?: string;
+				dataUrl: string;
 				isColored?: boolean;
 				backgroundSize?: string;
 			}>;
-			onIconsChanged(listener: () => void): () => void;
+			onIconsChanged?(listener: () => void): () => void;
 		};
 	}
 }
@@ -42,7 +42,7 @@ export default class CodeBlocksPlugin extends Plugin {
 		this.addSettingTab(this.settingsTab);
 
 		// Subscribe to Icon Manager changes if available
-		if (window.SFIconManager) {
+		if (window.SFIconManager?.onIconsChanged) {
 			this._iconManagerUnsubscribe = window.SFIconManager.onIconsChanged(() => {
 				this.updateCSS();
 			});

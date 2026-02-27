@@ -22,22 +22,7 @@ type CodeBlocksPluginType = Plugin & {
 	updateCSS(): void;
 };
 
-// ---------------------------------------------------------------------------
-// Extend Window for SFIconManager
-// ---------------------------------------------------------------------------
-
-declare global {
-	interface Window {
-		SFIconManager?: {
-			getIcons(): Array<{
-				id: string;
-				dataUrl?: string;
-				isColored?: boolean;
-				backgroundSize?: string;
-			}>;
-		};
-	}
-}
+// SFIconManager global type is declared in main.ts
 
 // ---------------------------------------------------------------------------
 // Helper: create a labelled text input row
