@@ -14,12 +14,10 @@ const CHECK_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" heigh
 
 function setSvgIcon(el: HTMLElement, svgString: string): void {
 	el.empty();
-	const temp = createDiv();
-	// eslint-disable-next-line @microsoft/sdl/no-inner-html -- parsing trusted static SVG constant
-	temp.innerHTML = svgString;
-	const svg = temp.firstElementChild;
-	if (svg) {
-		el.appendChild(svg);
+	const parsed = new DOMParser().parseFromString(svgString, "image/svg+xml");
+	const svg = parsed.documentElement;
+	if (svg && !parsed.querySelector("parsererror")) {
+		el.appendChild(document.importNode(svg, true));
 	}
 }
 

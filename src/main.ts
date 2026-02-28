@@ -69,10 +69,8 @@ export default class CodeBlocksPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- loadData returns any
-		const savedData = await this.loadData();
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- savedData is from loadData which returns any
-		this.settings = deepMerge(DEFAULT_SETTINGS, savedData || {});
+		const savedData = (await this.loadData()) as Partial<CodeBlocksSettings> | null;
+		this.settings = deepMerge(DEFAULT_SETTINGS, savedData ?? {});
 	}
 
 	async saveSettings() {

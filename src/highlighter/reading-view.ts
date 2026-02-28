@@ -21,8 +21,14 @@ function processCodeBlock(codeEl: HTMLElement) {
 	if (!code) return;
 
 	const html = highlightCode(code, language, settings.autoDetect);
-	// eslint-disable-next-line @microsoft/sdl/no-inner-html -- highlight.js returns HTML that must be parsed into DOM
-	codeEl.innerHTML = html;
+	const parsed = new DOMParser().parseFromString(`<pre>${html}</pre>`, "text/html");
+	const sourceNodes = parsed.body.firstElementChild?.childNodes;
+	codeEl.empty();
+	if (sourceNodes) {
+		for (const node of Array.from(sourceNodes)) {
+			codeEl.appendChild(document.importNode(node, true));
+		}
+	}
 	codeEl.classList.add("hljs");
 }
 
