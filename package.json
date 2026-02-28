@@ -28,6 +28,10 @@
 		"tslib": "2.4.0",
 		"typescript": "^5.8.3"
 	},
+	"peerDependencies": {
+		"@codemirror/state": "*",
+		"@codemirror/view": "*"
+	},
 	"dependencies": {
 		"highlight.js": "^11.11.0",
 		"obsidian": "latest"

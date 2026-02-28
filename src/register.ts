@@ -16,7 +16,7 @@ import { createCodeBlockExtensions } from "./widgets";
 
 type CodeBlocksPluginType = Plugin & {
 	settings: CodeBlocksSettings;
-	codeBlockStyleEl?: HTMLStyleElement;
+	codeBlockStyleEl?: CSSStyleSheet;
 	calloutCodeBlockObserver?: MutationObserver;
 };
 
@@ -34,16 +34,12 @@ type CalloutScrollCleanup = {
 type IntervalHandle = ReturnType<typeof window.setInterval>;
 
 /**
- * Create a managed style element in the document head.
- * Removes any existing element with the same id before creating a new one.
+ * Create a managed CSSStyleSheet and adopt it into the document.
  */
-export function createManagedStyleEl(id: string): HTMLStyleElement {
-	document.getElementById(id)?.remove();
-	// eslint-disable-next-line obsidianmd/no-forbidden-elements -- dynamic CSS for per-language code block styling requires a managed style element
-	const styleEl = document.createElement("style");
-	styleEl.id = id;
-	document.head.appendChild(styleEl);
-	return styleEl;
+export function createManagedStyleSheet(): CSSStyleSheet {
+	const sheet = new CSSStyleSheet();
+	document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+	return sheet;
 }
 
 /**
@@ -52,14 +48,14 @@ export function createManagedStyleEl(id: string): HTMLStyleElement {
  * callout observer, and all event handlers for callout scanning.
  */
 export function registerCodeBlocks(plugin: CodeBlocksPluginType): void {
-	// Create and attach the code block style element
-	plugin.codeBlockStyleEl = createManagedStyleEl("codeblocks-plugin-styles");
+	// Create and adopt the code block stylesheet
+	plugin.codeBlockStyleEl = createManagedStyleSheet();
 	updateCodeBlockCSS(plugin);
 
-	// Cleanup style element and observer on plugin unload
+	// Cleanup stylesheet and observer on plugin unload
 	plugin.register(() => {
 		if (plugin.codeBlockStyleEl) {
-			plugin.codeBlockStyleEl.remove();
+			document.adoptedStyleSheets = document.adoptedStyleSheets.filter(s => s !== plugin.codeBlockStyleEl);
 		}
 		if (plugin.calloutCodeBlockObserver) {
 			plugin.calloutCodeBlockObserver.disconnect();
@@ -425,6 +421,6 @@ export function updateCodeBlockCSS(plugin: CodeBlocksPluginType): void {
 	}
 
 	if (plugin.codeBlockStyleEl) {
-		plugin.codeBlockStyleEl.textContent = lines.join("\n");
+		plugin.codeBlockStyleEl.replaceSync(lines.join("\n"));
 	}
 }

@@ -1,4 +1,4 @@
-import { PluginSettingTab, App, Notice, Setting } from "obsidian";
+import { PluginSettingTab, App, Modal, Notice, Setting } from "obsidian";
 import type { Plugin } from "obsidian";
 import type { CodeBlocksSettings } from "./settings";
 import type { CodeBlockLanguageConfig, LanguageIcon } from "./languages";
@@ -9,8 +9,8 @@ import { renderHighlighterTab } from "./highlighter/settings-ui";
 type CodeBlocksPluginType = Plugin & {
 	settings: CodeBlocksSettings;
 	settingsTab?: CodeBlocksSettingTab;
-	codeBlockStyleEl?: HTMLStyleElement;
-	highlighterStyleEl?: HTMLStyleElement;
+	codeBlockStyleEl?: CSSStyleSheet;
+	highlighterStyleEl?: CSSStyleSheet;
 	calloutCodeBlockObserver?: MutationObserver;
 	saveSettings(): Promise<void>;
 	updateCSS(): void;
@@ -250,26 +250,25 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 			attr: { type: "button" },
 		});
 		addBtn.addEventListener("click", () => {
-			// eslint-disable-next-line no-alert -- prompt is the simplest way to get a language key from the user
-			const langKey = prompt("Enter the language key, such as python or javascript:");
-			if (!langKey) return;
-			const key = langKey.trim().toLowerCase();
-			if (!key) return;
-			if (settings.languages[key]) {
-				new Notice(`Language "${key}" already exists.`);
-				return;
-			}
-			settings.languages[key] = {
-				languageColor: "#6c757d",
-				titleColor: null,
-				borderColor: null,
-				icon: null,
-				displayName: key.charAt(0).toUpperCase() + key.slice(1),
-				aliases: [],
-			};
-			void plugin.saveSettings().then(() => {
-				plugin.updateCSS();
-				this.display();
+			this.promptInput("Enter the language key, such as python or javascript:", "", (langKey) => {
+				const key = langKey.trim().toLowerCase();
+				if (!key) return;
+				if (settings.languages[key]) {
+					new Notice(`Language "${key}" already exists.`);
+					return;
+				}
+				settings.languages[key] = {
+					languageColor: "#6c757d",
+					titleColor: null,
+					borderColor: null,
+					icon: null,
+					displayName: key.charAt(0).toUpperCase() + key.slice(1),
+					aliases: [],
+				};
+				void plugin.saveSettings().then(() => {
+					plugin.updateCSS();
+					this.display();
+				});
 			});
 		});
 
@@ -400,7 +399,7 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 					attr: { type: "button" },
 				});
 				editBtn.addEventListener("click", () => {
-					this.openLanguageEditor(key, config);
+					void this.openLanguageEditor(key, config);
 				});
 
 				const deleteBtn = actions.createEl("button", {
@@ -408,17 +407,17 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 					cls: "sf-delete-btn",
 					attr: { type: "button" },
 				});
-				deleteBtn.addEventListener("click", () => { void (async () => {
-					// eslint-disable-next-line no-alert -- confirm is the simplest way to verify destructive action
-					const confirmed = confirm(
+				deleteBtn.addEventListener("click", () => {
+					this.confirmAction(
 						`Delete language "${config.displayName || key}"? This cannot be undone.`,
+						() => { void (async () => {
+							delete settings.languages[key];
+							await plugin.saveSettings();
+							plugin.updateCSS();
+							renderLanguageList(searchInput.value);
+						})(); },
 					);
-					if (!confirmed) return;
-					delete settings.languages[key];
-					await plugin.saveSettings();
-					plugin.updateCSS();
-					renderLanguageList(searchInput.value);
-				})(); });
+				});
 			}
 		};
 
@@ -429,13 +428,12 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 		renderLanguageList("");
 	}
 
-	private openLanguageEditor(key: string, config: CodeBlockLanguageConfig): void {
+	private async openLanguageEditor(key: string, config: CodeBlockLanguageConfig): Promise<void> {
 		// Dynamic import to avoid circular dependency issues at load time.
 		// The CodeBlockLanguageModal is expected to be available in language-modal.ts.
 		try {
-			// eslint-disable-next-line @typescript-eslint/no-require-imports -- dynamic import to break circular dependency
-			const languageModalModule = require("./language-modal") as { CodeBlockLanguageModal: typeof import("./language-modal").CodeBlockLanguageModal };
-			const modal = new languageModalModule.CodeBlockLanguageModal(this.app, this.plugin, {
+			const { CodeBlockLanguageModal } = await import("./language-modal");
+			const modal = new CodeBlockLanguageModal(this.app, this.plugin, {
 				key,
 				config,
 				onSave: async (updatedConfig: CodeBlockLanguageConfig) => {
@@ -455,6 +453,14 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 	// -----------------------------------------------------------------------
 	// Custom CSS Tab
 	// -----------------------------------------------------------------------
+
+	private confirmAction(message: string, onConfirm: () => void): void {
+		new ConfirmModal(this.app, message, onConfirm).open();
+	}
+
+	private promptInput(title: string, defaultValue: string, onSubmit: (value: string) => void): void {
+		new InputModal(this.app, title, defaultValue, onSubmit).open();
+	}
 
 	private renderCustomCSSTab(contentEl: HTMLElement): void {
 		const plugin = this.plugin;
@@ -572,4 +578,40 @@ export class CodeBlocksSettingTab extends PluginSettingTab {
 		});
 	}
 
+}
+
+class ConfirmModal extends Modal {
+	private resolved = false;
+	constructor(app: App, private message: string, private onConfirm: () => void) {
+		super(app);
+	}
+	onOpen() {
+		this.contentEl.createEl("p", { text: this.message });
+		new Setting(this.contentEl)
+			.addButton(b => b.setButtonText("Confirm").setCta().onClick(() => { this.resolved = true; this.close(); this.onConfirm(); }))
+			.addButton(b => b.setButtonText("Cancel").onClick(() => this.close()));
+	}
+	onClose() { this.contentEl.empty(); }
+}
+
+class InputModal extends Modal {
+	private value = "";
+	constructor(app: App, private title: string, private defaultValue: string, private onSubmit: (value: string) => void) {
+		super(app);
+	}
+	onOpen() {
+		this.contentEl.createEl("p", { text: this.title });
+		new Setting(this.contentEl)
+			.addText(text => {
+				text.setValue(this.defaultValue);
+				text.onChange(v => { this.value = v; });
+				text.inputEl.addEventListener("keydown", (e: KeyboardEvent) => {
+					if (e.key === "Enter") { e.preventDefault(); this.close(); this.onSubmit(this.value || this.defaultValue); }
+				});
+			});
+		new Setting(this.contentEl)
+			.addButton(b => b.setButtonText("OK").setCta().onClick(() => { this.close(); this.onSubmit(this.value || this.defaultValue); }))
+			.addButton(b => b.setButtonText("Cancel").onClick(() => this.close()));
+	}
+	onClose() { this.contentEl.empty(); }
 }

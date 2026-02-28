@@ -237,8 +237,8 @@ export function setupCalloutCodeBlockObserver(plugin: CodeBlocksPlugin) {
 		}
 
 		const preElements = Array.from(
-			root.querySelectorAll(".callout pre"),
-		) as HTMLElement[];
+			root.querySelectorAll<HTMLElement>(".callout pre"),
+		);
 		const calloutEntries = text ? extractCalloutFenceEntries(text) : [];
 
 		preElements.forEach((preEl, index) => {
@@ -431,8 +431,8 @@ export async function decorateCalloutCodeBlock(
 							preEl.closest(".markdown-rendered") ||
 							document;
 						const calloutPres = Array.from(
-							viewRoot.querySelectorAll(".callout pre"),
-						) as HTMLElement[];
+							viewRoot.querySelectorAll<HTMLElement>(".callout pre"),
+						);
 						const index = calloutPres.indexOf(preEl);
 						if (index !== -1 && calloutEntries[index]) {
 							fenceLine = calloutEntries[index].fenceLine;

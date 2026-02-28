@@ -6,7 +6,7 @@ import { reloadHighlighter } from "./register";
 
 type CodeBlocksPluginType = Plugin & {
 	settings: CodeBlocksSettings;
-	highlighterStyleEl?: HTMLStyleElement;
+	highlighterStyleEl?: CSSStyleSheet;
 	refreshActiveMarkdownPreview(): void;
 	saveSettings(): Promise<void>;
 };

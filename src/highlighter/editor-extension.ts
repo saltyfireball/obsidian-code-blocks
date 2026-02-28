@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies -- @codemirror packages are provided by Obsidian at runtime
 import {
 	Decoration,
 	DecorationSet,
@@ -6,7 +5,6 @@ import {
 	ViewPlugin,
 	ViewUpdate,
 } from "@codemirror/view";
-// eslint-disable-next-line import/no-extraneous-dependencies -- @codemirror packages are provided by Obsidian at runtime
 import { Range } from "@codemirror/state";
 import { highlightToTokens } from "./highlighter";
 import type { HighlighterSettings } from "./types";

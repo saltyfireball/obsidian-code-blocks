@@ -22,8 +22,8 @@ declare global {
 export default class CodeBlocksPlugin extends Plugin {
 	settings!: CodeBlocksSettings;
 	settingsTab?: CodeBlocksSettingTab;
-	codeBlockStyleEl?: HTMLStyleElement;
-	highlighterStyleEl?: HTMLStyleElement;
+	codeBlockStyleEl?: CSSStyleSheet;
+	highlighterStyleEl?: CSSStyleSheet;
 	calloutCodeBlockObserver?: MutationObserver;
 	private _iconManagerUnsubscribe: (() => void) | null = null;
 

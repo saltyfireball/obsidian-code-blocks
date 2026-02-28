@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies -- @codemirror packages are provided by Obsidian at runtime
 import {
 	Decoration,
 	DecorationSet,
@@ -6,7 +5,6 @@ import {
 	ViewPlugin,
 	WidgetType,
 } from "@codemirror/view";
-// eslint-disable-next-line import/no-extraneous-dependencies -- @codemirror packages are provided by Obsidian at runtime
 import { EditorState, RangeSetBuilder, StateField } from "@codemirror/state";
 import type { Plugin } from "obsidian";
 import type { CodeBlocksSettings } from "./settings";

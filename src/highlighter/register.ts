@@ -13,17 +13,14 @@ import {
 
 type CodeBlocksPluginType = Plugin & {
 	settings: CodeBlocksSettings;
-	highlighterStyleEl?: HTMLStyleElement;
+	highlighterStyleEl?: CSSStyleSheet;
 	refreshActiveMarkdownPreview(): void;
 };
 
-function createManagedStyleEl(id: string): HTMLStyleElement {
-	document.getElementById(id)?.remove();
-	// eslint-disable-next-line obsidianmd/no-forbidden-elements -- dynamic style element needed for theme CSS injection
-	const styleEl = document.createElement("style");
-	styleEl.id = id;
-	document.head.appendChild(styleEl);
-	return styleEl;
+function createManagedStyleSheet(): CSSStyleSheet {
+	const sheet = new CSSStyleSheet();
+	document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+	return sheet;
 }
 
 export function registerHighlighter(plugin: CodeBlocksPluginType): void {
@@ -41,16 +38,16 @@ export function registerHighlighter(plugin: CodeBlocksPluginType): void {
 		return;
 	}
 
-	plugin.highlighterStyleEl = createManagedStyleEl("codeblocks-highlighter");
-	plugin.highlighterStyleEl.textContent = generateThemeCSS(
+	plugin.highlighterStyleEl = createManagedStyleSheet();
+	plugin.highlighterStyleEl.replaceSync(generateThemeCSS(
 		plugin.settings.highlighter.theme,
-	);
+	));
 
 	state.start();
 
 	plugin.register(() => {
 		if (plugin.highlighterStyleEl) {
-			plugin.highlighterStyleEl.remove();
+			document.adoptedStyleSheets = document.adoptedStyleSheets.filter(s => s !== plugin.highlighterStyleEl);
 		}
 		destroyHighlighterState();
 	});
@@ -83,7 +80,7 @@ export function stopHighlighter(plugin: CodeBlocksPluginType): void {
 		state.stop();
 	}
 	if (plugin.highlighterStyleEl) {
-		plugin.highlighterStyleEl.remove();
+		document.adoptedStyleSheets = document.adoptedStyleSheets.filter(s => s !== plugin.highlighterStyleEl);
 		plugin.highlighterStyleEl = undefined;
 	}
 }
@@ -95,14 +92,14 @@ export function reloadHighlighter(plugin: CodeBlocksPluginType): void {
 	state.updateSettings(plugin.settings.highlighter);
 
 	if (plugin.highlighterStyleEl) {
-		plugin.highlighterStyleEl.textContent = generateThemeCSS(
+		plugin.highlighterStyleEl.replaceSync(generateThemeCSS(
 			plugin.settings.highlighter.theme,
-		);
+		));
 	} else if (plugin.settings.highlighter.enabled) {
-		plugin.highlighterStyleEl = createManagedStyleEl("codeblocks-highlighter");
-		plugin.highlighterStyleEl.textContent = generateThemeCSS(
+		plugin.highlighterStyleEl = createManagedStyleSheet();
+		plugin.highlighterStyleEl.replaceSync(generateThemeCSS(
 			plugin.settings.highlighter.theme,
-		);
+		));
 	}
 
 	if (plugin.settings.highlighter.enabled && !state.active) {
