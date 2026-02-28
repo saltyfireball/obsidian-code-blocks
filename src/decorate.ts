@@ -238,7 +238,7 @@ export function setupCalloutCodeBlockObserver(plugin: CodeBlocksPlugin) {
 
 		const preElements = Array.from(
 			root.querySelectorAll(".callout pre"),
-		);
+		) as HTMLElement[];
 		const calloutEntries = text ? extractCalloutFenceEntries(text) : [];
 
 		preElements.forEach((preEl, index) => {
@@ -432,7 +432,7 @@ export async function decorateCalloutCodeBlock(
 							document;
 						const calloutPres = Array.from(
 							viewRoot.querySelectorAll(".callout pre"),
-						);
+						) as HTMLElement[];
 						const index = calloutPres.indexOf(preEl);
 						if (index !== -1 && calloutEntries[index]) {
 							fenceLine = calloutEntries[index].fenceLine;
