@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-code-blocks",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"description": "Language-based code block styling with headers, icons, colors, line numbers, copy buttons, custom CSS, and highlight.js syntax highlighting for Obsidian.",
 	"main": "main.js",
 	"type": "module",
