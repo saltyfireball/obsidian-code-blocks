@@ -4,9 +4,9 @@
 
 <p align="center">
   <img src="assets/header.svg" width="600" />
-</p
+</p>
 
-An Obsidian plugin that enhancescode blocks with language-based styling, headers, icons, colors, line numbers, copy buttons, custom CSS, and syntax highlighting powered by highlight.js.
+An Obsidian plugin that enhances code blocks with language-based styling, headers, icons, colors, line numbers, copy buttons, custom CSS, and syntax highlighting powered by highlight.js.
 
 ## Features
 
@@ -28,21 +28,21 @@ Parameters are added after the language identifier on the opening fence line:
 ````
   ```python title:"My Script" ln:5 hl:1,3-5
   # your code here
+  ```
 ````
 
-````
-
-| Parameter | Description | Example |
-|-----------|-------------|---------|
-| `title:"text"` | Custom title displayed in header | `title:"Hello World"` |
-| `ln:true` | Enable line numbers for this block | `ln:true` |
-| `ln:false` | Disable line numbers for this block | `ln:false` |
-| `ln:5` | Start line numbers at 5 | `ln:5` |
-| `hl:1,3-5,7` | Highlight specific lines | `hl:1,3-5` |
+| Parameter      | Description                         | Example               |
+| -------------- | ----------------------------------- | --------------------- |
+| `title:"text"` | Custom title displayed in header    | `title:"Hello World"` |
+| `ln:true`      | Enable line numbers for this block  | `ln:true`             |
+| `ln:false`     | Disable line numbers for this block | `ln:false`            |
+| `ln:5`         | Start line numbers at 5             | `ln:5`                |
+| `hl:1,3-5,7`   | Highlight specific lines            | `hl:1,3-5`            |
 
 ## Settings
 
 ### General
+
 - Enable/disable code block styling
 - Show/hide line numbers globally
 - Show/hide copy button
@@ -50,17 +50,20 @@ Parameters are added after the language identifier on the opening fence line:
 - Configurable ignore languages list
 
 ### Languages
+
 - Add, edit, and delete language configurations
 - Configure language color, title color, border color
 - Assign icons and set icon size
 - Define display names and aliases
 
 ### Custom CSS
+
 - Full CSS editor with variables reference
 - Import CSS from snippet files
 - Available CSS variables: `--sf-cb-language-color`, `--sf-cb-title-color`, `--sf-cb-border-color`, `--sf-cb-background`
 
 ### Syntax Highlighting
+
 - Enable/disable highlight.js integration
 - Choose from 5 built-in themes (GitHub Dark, Monokai, Nord, One Dark, Dracula)
 - Auto-detect language for untagged code blocks
@@ -82,9 +85,35 @@ Key selectors for custom styling:
 
 ## Installation
 
-1. Copy the plugin folder to your vault's `.obsidian/plugins/` directory
-2. Enable the plugin in Obsidian Settings > Community Plugins
-3. Configure languages and settings in the plugin settings tab
+### Obsidian Community Plugin (pending)
+
+This plugin has been submitted for review to the Obsidian community plugin directory. Once approved, you will be able to install it directly from **Settings > Community plugins > Browse** by searching for "Code Blocks".
+
+### Using BRAT
+
+You can install this plugin right now using the [BRAT](https://github.com/TfTHacker/obsidian42-brat) plugin:
+
+1. Install BRAT from **Settings > Community plugins > Browse** (search for "BRAT" by TfTHacker)
+2. Open the BRAT settings
+3. Under the **Beta plugins** section, click **Add beta plugin**
+
+    ![BRAT beta plugin list](assets/brat_example_beta_plugin_list.png)
+
+4. In the overlay, enter this plugin's repository: `https://github.com/saltyfireball/obsidian-code-blocks` (or just `saltyfireball/obsidian-code-blocks`)
+
+    ![BRAT add beta plugin](assets/brat_example_beta_modal.png)
+
+5. Leave the version set to latest
+
+    ![BRAT beta plugin filled](assets/brat_example_beta_modal_filled.png)
+
+6. Click **Add plugin**
+
+### Manual
+
+1. Download the latest release from the [Releases](https://github.com/saltyfireball/obsidian-code-blocks/releases) page
+2. Copy `main.js`, `manifest.json`, and `styles.css` into your vault's `.obsidian/plugins/obsidian-code-blocks/` directory
+3. Enable the plugin in **Settings > Community plugins**
 
 ## Settings Migration
 
@@ -102,7 +131,7 @@ jq '{
   ignoreLanguages: ["mermaid", "my-toc"],
   highlighter: .highlighter
 }' "$VAULT/.obsidian/plugins/sfb/data.json" > "$VAULT/.obsidian/plugins/obsidian-code-blocks/data.json"
-````
+```
 
 ## License
 
