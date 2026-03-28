@@ -175,6 +175,6 @@ export const DEFAULT_SETTINGS: CodeBlocksSettings = {
 	backgroundColor: "",
 	languages: DEFAULT_CODE_BLOCK_LANGUAGES,
 	customCSS: "",
-	ignoreLanguages: ["mermaid", "my-toc"],
+	ignoreLanguages: ["mermaid", "my-toc", "chessboard"],
 	highlighter: DEFAULT_HIGHLIGHTER_SETTINGS,
 };

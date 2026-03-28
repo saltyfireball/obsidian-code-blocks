@@ -143,20 +143,33 @@ export function processCodeBlockLines(
 ): void {
 	const textContent = codeEl.textContent || "";
 	const lines = textContent.split("\n");
-	if (lines.length > 0 && lines[lines.length - 1] === "") {
+	// Obsidian preview prepends \n before first code line - strip it
+	if (lines.length > 0 && lines[0] === "") {
+		lines.shift();
+	}
+	while (lines.length > 0 && lines[lines.length - 1] === "") {
 		lines.pop();
 	}
 	const lineCount = lines.length;
 	const offset = params.lineNumbers.offset || 1;
 
+	// Also add top padding to gutter to match the leading \n in the code element
 	codeEl.classList.add("sf-codeblock-code");
+	codeEl.classList.add("sf-codeblock-has-leading-newline");
 
 	if (showLineNumbers) {
 		const gutter = document.createElement("div");
 		gutter.className = "sf-codeblock-gutter";
 		gutter.setAttribute("aria-hidden", "true");
 
+		// Check if code element starts with \n (Obsidian preview mode)
+		const rawText = codeEl.textContent ?? "";
+		const hasLeadingNewline = rawText.length > 0 && rawText[0] === "\n";
+
 		const lineNumbers: string[] = [];
+		if (hasLeadingNewline) {
+			lineNumbers.push(""); // Match the leading blank line in code
+		}
 		for (let i = 0; i < lineCount; i++) {
 			lineNumbers.push((i + offset).toString());
 		}

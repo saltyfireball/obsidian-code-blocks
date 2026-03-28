@@ -71,6 +71,17 @@ export default class CodeBlocksPlugin extends Plugin {
 	async loadSettings() {
 		const savedData = (await this.loadData()) as Partial<CodeBlocksSettings> | null;
 		this.settings = deepMerge(DEFAULT_SETTINGS, savedData ?? {});
+		const autoIgnore = ["mermaid", "my-toc", "chessboard", "sfb-figlet"];
+		let changed = false;
+		for (const lang of autoIgnore) {
+			if (!this.settings.ignoreLanguages.includes(lang)) {
+				this.settings.ignoreLanguages.push(lang);
+				changed = true;
+			}
+		}
+		if (changed) {
+			await this.saveSettings();
+		}
 	}
 
 	async saveSettings() {

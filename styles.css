@@ -807,7 +807,14 @@
 .sf-codeblock-pre.sf-codeblock-with-gutter {
 	display: flex !important;
 	flex-direction: row !important;
-	align-items: flex-start;
+	align-items: stretch;
+}
+
+.sf-codeblock-pre.sf-codeblock-with-gutter > code,
+.sf-codeblock-pre.sf-codeblock-with-gutter > .sf-codeblock-gutter {
+	line-height: var(--code-line-height, 1.5) !important;
+	font-size: var(--code-size, inherit) !important;
+	font-family: var(--font-monospace) !important;
 }
 
 .sf-codeblock-pre.sf-codeblock-with-gutter > code {
