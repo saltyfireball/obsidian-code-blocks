@@ -8,6 +8,7 @@ import {
 } from "./decorate";
 import { updateCodeBlockHeaderStyles } from "./header";
 import {
+	findFenceLineByLine,
 	findFenceLineForCodeBlock,
 	parseCodeblockParameters,
 } from "./params";
@@ -93,14 +94,46 @@ export function registerCodeBlocks(plugin: CodeBlocksPluginType): void {
 			}
 
 			const sectionInfo = ctx.getSectionInfo(preEl);
-			const fenceLine = sectionInfo?.text
-				? findFenceLineForCodeBlock(
-						sectionInfo.text,
+			let fenceLine: string | null = null;
+			let sourceText: string | null = sectionInfo?.text ?? null;
+
+			if (sourceText && sectionInfo) {
+				fenceLine = findFenceLineByLine(
+					sourceText,
+					sectionInfo.lineStart + 1,
+				);
+				if (!fenceLine) {
+					fenceLine = findFenceLineForCodeBlock(
+						sourceText,
 						codeEl.textContent || "",
 						"",
 						plugin.settings.languages,
-					)
-				: null;
+					);
+				}
+			}
+
+			// If getSectionInfo returned null (common during
+			// initial render), read the source from the active
+			// view and match by content
+			if (!fenceLine) {
+				if (!sourceText) {
+					const activeView =
+						plugin.app.workspace.getActiveViewOfType(
+							MarkdownView,
+						);
+					if (activeView?.getViewData) {
+						sourceText = activeView.getViewData();
+					}
+				}
+				if (sourceText) {
+					fenceLine = findFenceLineForCodeBlock(
+						sourceText,
+						codeEl.textContent || "",
+						"",
+						plugin.settings.languages,
+					);
+				}
+			}
 
 			if (preEl.classList.contains("sf-codeblock-decorated")) {
 				if (fenceLine) {
@@ -137,7 +170,9 @@ export function registerCodeBlocks(plugin: CodeBlocksPluginType): void {
 				codeEl,
 				plugin,
 				ctx.sourcePath,
-				sectionInfo,
+				sourceText
+					? { text: sourceText, fenceLine }
+					: null,
 			);
 		});
 	});
