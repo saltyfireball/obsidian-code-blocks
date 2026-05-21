@@ -52,11 +52,14 @@ export function parseCodeblockParameters(
     }
   }
 
+  // Match the opening quote and require the closing quote to be the same
+  // kind, so a single quote inside a double-quoted title (or vice versa)
+  // does not terminate the match early.
   const titleMatch = trimmed.match(
-    /title[:=]\s*["']([^"']+)["']|title[:=]\s*(\S+)/i,
+    /title[:=]\s*"([^"]*)"|title[:=]\s*'([^']*)'|title[:=]\s*(\S+)/i,
   );
   if (titleMatch) {
-    const titleValue = titleMatch[1] || titleMatch[2];
+    const titleValue = titleMatch[1] || titleMatch[2] || titleMatch[3];
     if (titleValue) {
       params.title = titleValue;
     }
