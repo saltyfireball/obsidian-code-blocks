@@ -180,11 +180,19 @@ export function processCodeBlockLines(
 			pre.classList.add("sf-codeblock-with-gutter");
 			pre.insertBefore(gutter, codeEl);
 
-			const codeStyles = window.getComputedStyle(codeEl);
-			gutter.style.fontSize = codeStyles.fontSize;
-			gutter.style.lineHeight = codeStyles.lineHeight;
-			gutter.style.paddingTop = codeStyles.paddingTop;
-			gutter.style.paddingBottom = codeStyles.paddingBottom;
+			// Defer the computed-style read to the next frame. Reading
+			// getComputedStyle right after the insertBefore/classList writes
+			// forces a synchronous layout flush, and doing that once per code
+			// block causes layout thrashing on pages with many blocks.
+			// font-size/line-height are already pinned by CSS (styles.css
+			// !important rules), so only the top/bottom padding needs to be
+			// mirrored onto the gutter for alignment.
+			window.requestAnimationFrame(() => {
+				if (!gutter.isConnected) return;
+				const codeStyles = window.getComputedStyle(codeEl);
+				gutter.style.paddingTop = codeStyles.paddingTop;
+				gutter.style.paddingBottom = codeStyles.paddingBottom;
+			});
 		}
 	}
 
@@ -337,36 +345,49 @@ export function setupCalloutCodeBlockObserver(plugin: CodeBlocksPlugin) {
 		});
 	};
 
+	// Coalesce DOM mutation bursts into a single scheduled scan. A reading
+	// view render adds many nodes in one batch; running a querySelectorAll per
+	// added node (as before) is pure overhead on pages with no callouts. Here
+	// we only note that element nodes were added, then do one cheap guarded
+	// scan of the active root on the next frame.
+	let scanScheduled = false;
+	const scheduleCalloutScan = () => {
+		if (scanScheduled) {
+			return;
+		}
+		scanScheduled = true;
+		window.requestAnimationFrame(() => {
+			scanScheduled = false;
+			if (!plugin.settings.enabled) {
+				return;
+			}
+			const activeView =
+				plugin.app.workspace.getActiveViewOfType(MarkdownView);
+			const root =
+				activeView?.contentEl || plugin.app.workspace.containerEl;
+			// Cheap guard: bail immediately when there are no undecorated
+			// callout code blocks (the common case for plain code blocks).
+			if (
+				!root?.querySelector?.(
+					".callout pre:not(.sf-codeblock-decorated):not(.sf-codeblock-pending)",
+				)
+			) {
+				return;
+			}
+			void scanCalloutCodeBlocks(root);
+		});
+	};
+
 	const observer = new MutationObserver((mutations) => {
 		for (let mi = 0; mi < mutations.length; mi++) {
-			const mutation = mutations[mi];
-			if (!mutation) {
+			const nodes = mutations[mi]?.addedNodes;
+			if (!nodes) {
 				continue;
 			}
-			const nodes = mutation.addedNodes;
 			for (let ni = 0; ni < nodes.length; ni++) {
-				const node = nodes[ni];
-				if (!node || node.nodeType !== Node.ELEMENT_NODE) {
-					continue;
-				}
-
-				const element = node as HTMLElement;
-				const preElements = element.findAll(
-					".callout pre:not(.sf-codeblock-decorated):not(.sf-codeblock-pending)",
-				);
-
-				if (preElements.length > 0) {
-					void scanCalloutCodeBlocks(element);
-				}
-
-				if (
-					element.matches(
-						".callout pre:not(.sf-codeblock-decorated):not(.sf-codeblock-pending)",
-					)
-				) {
-					const calloutRoot =
-						element.closest<HTMLElement>(".callout") || element;
-					void scanCalloutCodeBlocks(calloutRoot);
+				if (nodes[ni]?.nodeType === Node.ELEMENT_NODE) {
+					scheduleCalloutScan();
+					return;
 				}
 			}
 		}
