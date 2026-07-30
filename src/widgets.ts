@@ -213,14 +213,66 @@ interface CodeBlockInterval {
 	lineCount: number;
 }
 
+const BACKTICK = 96; // "`"
+const TILDE = 126; // "~"
+
 /**
- * Single cheap structural pass over the whole document to locate every code
- * block's line interval. Only regex fence matching is done here - no decoration
- * allocation and no per-block language/icon resolution - so the per-keystroke
- * cost stays proportional to document length rather than to the (far more
- * expensive) full decoration rebuild it feeds.
+ * If `text` (already callout-stripped and left-trimmed) opens a fence, return
+ * its fence character; otherwise null. An opening fence is a run of >= 3 of the
+ * same fence character, optionally followed by an info string.
  */
-function computeBlockIntervals(doc: Text): CodeBlockInterval[] {
+function fenceOpenChar(text: string): string | null {
+	const code = text.charCodeAt(0);
+	if (code !== BACKTICK && code !== TILDE) {
+		return null;
+	}
+	let run = 1;
+	while (run < text.length && text.charCodeAt(run) === code) {
+		run++;
+	}
+	return run >= 3 ? text[0] : null;
+}
+
+/**
+ * Whether `text` (already callout-stripped and left-trimmed) is a closing
+ * fence for `fenceChar`: a run of >= 3 of that character followed only by
+ * whitespace.
+ */
+function isFenceClose(text: string, fenceChar: string): boolean {
+	const code = fenceChar.charCodeAt(0);
+	let run = 0;
+	while (run < text.length && text.charCodeAt(run) === code) {
+		run++;
+	}
+	if (run < 3) {
+		return false;
+	}
+	for (let i = run; i < text.length; i++) {
+		const ch = text.charCodeAt(i);
+		if (ch !== 32 && ch !== 9) {
+			return false;
+		}
+	}
+	return true;
+}
+
+/**
+ * Single cheap structural pass to locate code block intervals, tuned for the
+ * per-keystroke path:
+ *  - only blocks intersecting [minLine, maxLine] are collected (allocation is
+ *    bounded to the viewport, not the whole document);
+ *  - lines with no fence character take a no-allocation fast path (the vast
+ *    majority of lines), avoiding stripCalloutPrefix/trimStart and any regex;
+ *  - fence detection is char-scanned rather than compiling a RegExp per line;
+ *  - the scan stops as soon as it is past the viewport and outside any block.
+ * The scan must still start from line 1 because fence parity above the viewport
+ * determines whether the first visible line sits inside a block.
+ */
+function computeBlockIntervals(
+	doc: Text,
+	minLine: number,
+	maxLine: number,
+): CodeBlockInterval[] {
 	const blocks: CodeBlockInterval[] = [];
 	const lineCount = doc.lines;
 
@@ -231,30 +283,43 @@ function computeBlockIntervals(doc: Text): CodeBlockInterval[] {
 	let count = 0;
 
 	for (let i = 1; i <= lineCount; i++) {
-		const stripped = stripCalloutPrefix(doc.line(i).text).trimStart();
+		// Nothing below the viewport matters once we are outside a block.
+		if (!inBlock && i > maxLine) {
+			break;
+		}
+
+		const raw = doc.line(i).text;
+		if (raw.indexOf("`") === -1 && raw.indexOf("~") === -1) {
+			if (inBlock) {
+				count++;
+			}
+			continue;
+		}
+
+		const stripped = stripCalloutPrefix(raw).trimStart();
 
 		if (!inBlock) {
-			const fenceMatch = stripped.match(/^([`~]{3,})(.*)$/);
-			if (fenceMatch) {
+			const openChar = fenceOpenChar(stripped);
+			if (openChar) {
 				inBlock = true;
-				fenceChar = (fenceMatch[1] || "")[0] || "";
+				fenceChar = openChar;
 				start = i;
 				fenceText = stripped;
 				count = 0;
 			}
-		} else {
-			const closingFence = new RegExp(`^${fenceChar}{3,}\\s*$`);
-			if (closingFence.test(stripped)) {
+		} else if (isFenceClose(stripped, fenceChar)) {
+			// Collect only if this block overlaps the visible span.
+			if (start <= maxLine && i >= minLine) {
 				blocks.push({ start, end: i, fenceText, lineCount: count });
-				inBlock = false;
-				fenceChar = "";
-			} else {
-				count++;
 			}
+			inBlock = false;
+			fenceChar = "";
+		} else {
+			count++;
 		}
 	}
 
-	if (inBlock) {
+	if (inBlock && start <= maxLine) {
 		// Unterminated block (fence still open at EOF): matches the previous
 		// behavior of decorating every remaining line as content with a line
 		// count of 0.
@@ -285,13 +350,13 @@ export function buildCodeBlockDecorations(
 		return Decoration.none;
 	}
 
-	const blocks = computeBlockIntervals(doc);
+	const startVisLine = doc.lineAt(ranges[0].from).number;
+	const endVisLine = doc.lineAt(ranges[ranges.length - 1].to).number;
+
+	const blocks = computeBlockIntervals(doc, startVisLine, endVisLine);
 	if (blocks.length === 0) {
 		return Decoration.none;
 	}
-
-	const startVisLine = doc.lineAt(ranges[0].from).number;
-	const endVisLine = doc.lineAt(ranges[ranges.length - 1].to).number;
 
 	const builder = new RangeSetBuilder<Decoration>();
 
