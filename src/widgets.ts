@@ -3,9 +3,11 @@ import {
 	DecorationSet,
 	EditorView,
 	ViewPlugin,
+	ViewUpdate,
 	WidgetType,
 } from "@codemirror/view";
-import { EditorState, RangeSetBuilder, StateField } from "@codemirror/state";
+import { RangeSetBuilder } from "@codemirror/state";
+import type { Text } from "@codemirror/state";
 import type { Plugin } from "obsidian";
 import type { CodeBlocksSettings } from "./settings";
 import type { CodeblockParameters } from "./params";
@@ -74,20 +76,31 @@ class CodeBlockHeaderWidget extends WidgetType {
 }
 
 export function createCodeBlockExtensions(plugin: CodeBlocksPlugin) {
-	const codeBlockField = StateField.define<DecorationSet>({
-		create(state: EditorState) {
-			return buildCodeBlockDecorations(state, plugin);
-		},
-		update(value, tr) {
-			if (tr.docChanged || tr.effects.length > 0) {
-				return buildCodeBlockDecorations(tr.state, plugin);
+	const codeBlockViewPlugin = ViewPlugin.fromClass(
+		class {
+			decorations: DecorationSet;
+
+			constructor(view: EditorView) {
+				this.decorations = buildCodeBlockDecorations(view, plugin);
 			}
-			return value;
+
+			update(update: ViewUpdate) {
+				if (
+					update.docChanged ||
+					update.viewportChanged ||
+					update.transactions.some((tr) => tr.effects.length > 0)
+				) {
+					this.decorations = buildCodeBlockDecorations(
+						update.view,
+						plugin,
+					);
+				}
+			}
 		},
-		provide(field) {
-			return EditorView.decorations.from(field);
+		{
+			decorations: (v) => v.decorations,
 		},
-	});
+	);
 
 	const copyButtonPlugin = ViewPlugin.fromClass(
 		class {
@@ -186,11 +199,79 @@ export function createCodeBlockExtensions(plugin: CodeBlocksPlugin) {
 		},
 	);
 
-	return [codeBlockField, copyButtonPlugin];
+	return [codeBlockViewPlugin, copyButtonPlugin];
 }
 
+interface CodeBlockInterval {
+	/** 1-based line number of the opening fence. */
+	start: number;
+	/** 1-based line number of the closing fence, or -1 if unterminated. */
+	end: number;
+	/** Stripped, left-trimmed opening-fence line text (contains parameters). */
+	fenceText: string;
+	/** Number of content lines (used for gutter width). */
+	lineCount: number;
+}
+
+/**
+ * Single cheap structural pass over the whole document to locate every code
+ * block's line interval. Only regex fence matching is done here - no decoration
+ * allocation and no per-block language/icon resolution - so the per-keystroke
+ * cost stays proportional to document length rather than to the (far more
+ * expensive) full decoration rebuild it feeds.
+ */
+function computeBlockIntervals(doc: Text): CodeBlockInterval[] {
+	const blocks: CodeBlockInterval[] = [];
+	const lineCount = doc.lines;
+
+	let inBlock = false;
+	let fenceChar = "";
+	let start = 0;
+	let fenceText = "";
+	let count = 0;
+
+	for (let i = 1; i <= lineCount; i++) {
+		const stripped = stripCalloutPrefix(doc.line(i).text).trimStart();
+
+		if (!inBlock) {
+			const fenceMatch = stripped.match(/^([`~]{3,})(.*)$/);
+			if (fenceMatch) {
+				inBlock = true;
+				fenceChar = (fenceMatch[1] || "")[0] || "";
+				start = i;
+				fenceText = stripped;
+				count = 0;
+			}
+		} else {
+			const closingFence = new RegExp(`^${fenceChar}{3,}\\s*$`);
+			if (closingFence.test(stripped)) {
+				blocks.push({ start, end: i, fenceText, lineCount: count });
+				inBlock = false;
+				fenceChar = "";
+			} else {
+				count++;
+			}
+		}
+	}
+
+	if (inBlock) {
+		// Unterminated block (fence still open at EOF): matches the previous
+		// behavior of decorating every remaining line as content with a line
+		// count of 0.
+		blocks.push({ start, end: -1, fenceText, lineCount: 0 });
+	}
+
+	return blocks;
+}
+
+/**
+ * Build code block decorations for the visible viewport only. Blocks that do
+ * not intersect view.visibleRanges are skipped entirely, and the expensive
+ * per-block work (parameter parsing, language resolution, icon lookup, header
+ * widget) runs only for blocks on screen.
+ */
 export function buildCodeBlockDecorations(
-	state: EditorState,
+	view: EditorView,
 	plugin: CodeBlocksPlugin,
 ): DecorationSet {
 	const settings = plugin.settings;
@@ -198,102 +279,73 @@ export function buildCodeBlockDecorations(
 		return Decoration.none;
 	}
 
-	const builder = new RangeSetBuilder<Decoration>();
-	const doc = state.doc;
-
-	let inBlock = false;
-	let skipBlock = false;
-	let fenceChar = "";
-	let fenceLine = "";
-	let currentLang = "unknown";
-	let lineNumInBlock = 0;
-	let blockLineCount = 0;
-	let blockLineNumbersEnabled: boolean | null = null;
-
-	const blockLineCounts: Map<number, number> = new Map();
-	let tempInBlock = false;
-	let tempFenceChar = "";
-	let tempBlockStart = 0;
-	let tempLineCount = 0;
-
-	for (let i = 1; i <= doc.lines; i++) {
-		const line = doc.line(i);
-		const strippedText = stripCalloutPrefix(line.text);
-		const fenceText = strippedText.trimStart();
-
-		if (!tempInBlock) {
-			const fenceMatch = fenceText.match(/^([`~]{3,})(.*)$/);
-			if (fenceMatch) {
-				tempInBlock = true;
-				const fenceChars = fenceMatch[1] || "";
-				tempFenceChar = fenceChars[0] || "";
-				tempBlockStart = i;
-				tempLineCount = 0;
-			}
-		} else {
-			const closingFence = new RegExp(`^${tempFenceChar}{3,}\\s*$`);
-			if (closingFence.test(fenceText)) {
-				blockLineCounts.set(tempBlockStart, tempLineCount);
-				tempInBlock = false;
-				tempFenceChar = "";
-			} else {
-				tempLineCount++;
-			}
-		}
+	const doc = view.state.doc;
+	const ranges = view.visibleRanges;
+	if (ranges.length === 0) {
+		return Decoration.none;
 	}
 
-	for (let i = 1; i <= doc.lines; i++) {
-		const line = doc.line(i);
-		const text = line.text;
-		const strippedText = stripCalloutPrefix(text);
-		const fenceText = strippedText.trimStart();
+	const blocks = computeBlockIntervals(doc);
+	if (blocks.length === 0) {
+		return Decoration.none;
+	}
 
-		if (!inBlock) {
-			const fenceMatch = fenceText.match(/^([`~]{3,})(.*)$/);
-			if (fenceMatch) {
-				inBlock = true;
-				lineNumInBlock = 0;
-				blockLineCount = blockLineCounts.get(i) || 0;
-				const fenceChars = fenceMatch[1] || "";
-				fenceChar = fenceChars[0] || "";
-				fenceLine = fenceText;
-				const params = parseCodeblockParameters(fenceLine);
-				currentLang = params.language || "unknown";
-				blockLineNumbersEnabled = params.lineNumbers.enabled;
-				if (settings.ignoreLanguages.includes(currentLang.toLowerCase())) {
-					skipBlock = true;
-					continue;
-				}
-				const langConfig = resolveLanguageConfig(
-					params.language,
-					settings.languages,
-				);
-				const iconsList = (window.SFIconManager?.getIcons() ?? []) as LanguageIcon[];
-				const icon = langConfig?.config?.icon
-					? getIconForLanguage(langConfig.config.icon, iconsList)
-					: null;
+	const startVisLine = doc.lineAt(ranges[0].from).number;
+	const endVisLine = doc.lineAt(ranges[ranges.length - 1].to).number;
 
-				const baseLanguageColor =
-					langConfig?.config?.languageColor ||
-					langConfig?.config?.color ||
-					"#6c757d";
-				const languageColor = params.langColor || baseLanguageColor;
-				const borderColor =
-					langConfig?.config?.borderColor || languageColor;
+	const builder = new RangeSetBuilder<Decoration>();
 
-				const maxDigits = Math.max(2, String(blockLineCount).length);
-				const gutterWidth = `${maxDigits + 1}em`;
+	for (const block of blocks) {
+		const blockEnd = block.end === -1 ? doc.lines : block.end;
 
-				const lineClass = Decoration.line({
+		// Skip blocks entirely outside the visible span.
+		if (block.start > endVisLine || blockEnd < startVisLine) {
+			continue;
+		}
+
+		const params = parseCodeblockParameters(block.fenceText);
+		const currentLang = params.language || "unknown";
+		if (settings.ignoreLanguages.includes(currentLang.toLowerCase())) {
+			continue;
+		}
+
+		const maxDigits = Math.max(2, String(block.lineCount).length);
+		const gutterWidth = `${maxDigits + 1}em`;
+
+		// Opening fence line + header widget (only if the fence line is visible).
+		if (block.start >= startVisLine && block.start <= endVisLine) {
+			const langConfig = resolveLanguageConfig(
+				params.language,
+				settings.languages,
+			);
+			const iconsList = (window.SFIconManager?.getIcons() ?? []) as LanguageIcon[];
+			const icon = langConfig?.config?.icon
+				? getIconForLanguage(langConfig.config.icon, iconsList)
+				: null;
+
+			const baseLanguageColor =
+				langConfig?.config?.languageColor ||
+				langConfig?.config?.color ||
+				"#6c757d";
+			const languageColor = params.langColor || baseLanguageColor;
+			const borderColor = langConfig?.config?.borderColor || languageColor;
+
+			const fenceFrom = doc.line(block.start).from;
+			builder.add(
+				fenceFrom,
+				fenceFrom,
+				Decoration.line({
 					attributes: {
 						class: `sf-codeblock-fence-start sf-codeblock-lang-${currentLang}`,
-						"data-line-count": String(blockLineCount),
+						"data-line-count": String(block.lineCount),
 						style: `--sf-gutter-width: ${gutterWidth}`,
 					},
-				});
-				builder.add(line.from, line.from, lineClass);
-
-				const headerWidget = Decoration.widget({
+				}),
+			);
+			builder.add(
+				fenceFrom,
+				fenceFrom,
+				Decoration.widget({
 					widget: new CodeBlockHeaderWidget(
 						params,
 						langConfig,
@@ -302,60 +354,55 @@ export function buildCodeBlockDecorations(
 						borderColor,
 					),
 					side: 1,
-				});
-				builder.add(line.from, line.from, headerWidget);
+				}),
+			);
+		}
+
+		// Content lines (visible portion only).
+		const lastContentLine = block.end === -1 ? blockEnd : blockEnd - 1;
+		const contentStart = Math.max(block.start + 1, startVisLine);
+		const contentEnd = Math.min(lastContentLine, endVisLine);
+		const lineNumbersEnabled = params.lineNumbers.enabled;
+
+		for (let ln = contentStart; ln <= contentEnd; ln++) {
+			let lineClasses = `sf-codeblock-content-line sf-codeblock-lang-${currentLang}`;
+			if (lineNumbersEnabled === true) {
+				lineClasses += " sf-ln-enabled";
+			} else if (lineNumbersEnabled === false) {
+				lineClasses += " sf-ln-disabled";
 			}
-			continue;
+
+			const from = doc.line(ln).from;
+			builder.add(
+				from,
+				from,
+				Decoration.line({
+					attributes: {
+						class: lineClasses,
+						"data-line-num": String(ln - block.start),
+						style: `--sf-gutter-width: ${gutterWidth}`,
+					},
+				}),
+			);
 		}
 
-		const closingFence = new RegExp(`^${fenceChar}{3,}\\s*$`);
-		if (closingFence.test(fenceText)) {
-			if (skipBlock) {
-				inBlock = false;
-				skipBlock = false;
-				fenceChar = "";
-				fenceLine = "";
-				currentLang = "unknown";
-				blockLineNumbersEnabled = null;
-				continue;
-			}
-			const lineClass = Decoration.line({
-				attributes: {
-					class: `sf-codeblock-fence-end sf-codeblock-lang-${currentLang}`,
-				},
-			});
-			builder.add(line.from, line.from, lineClass);
-			inBlock = false;
-			fenceChar = "";
-			fenceLine = "";
-			currentLang = "unknown";
-			blockLineNumbersEnabled = null;
-			continue;
+		// Closing fence line (only if terminated and visible).
+		if (
+			block.end !== -1 &&
+			block.end >= startVisLine &&
+			block.end <= endVisLine
+		) {
+			const from = doc.line(block.end).from;
+			builder.add(
+				from,
+				from,
+				Decoration.line({
+					attributes: {
+						class: `sf-codeblock-fence-end sf-codeblock-lang-${currentLang}`,
+					},
+				}),
+			);
 		}
-
-		if (skipBlock) {
-			continue;
-		}
-
-		lineNumInBlock++;
-		const maxDigits = Math.max(2, String(blockLineCount).length);
-		const gutterWidth = `${maxDigits + 1}em`;
-
-		let lineClasses = `sf-codeblock-content-line sf-codeblock-lang-${currentLang}`;
-		if (blockLineNumbersEnabled === true) {
-			lineClasses += " sf-ln-enabled";
-		} else if (blockLineNumbersEnabled === false) {
-			lineClasses += " sf-ln-disabled";
-		}
-
-		const lineClass = Decoration.line({
-			attributes: {
-				class: lineClasses,
-				"data-line-num": String(lineNumInBlock),
-				style: `--sf-gutter-width: ${gutterWidth}`,
-			},
-		});
-		builder.add(line.from, line.from, lineClass);
 	}
 
 	return builder.finish();
