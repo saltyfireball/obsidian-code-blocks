@@ -87,8 +87,11 @@ export function createCodeBlockExtensions(plugin: CodeBlocksPlugin) {
 			update(update: ViewUpdate) {
 				if (
 					update.docChanged ||
-					update.viewportChanged ||
-					update.transactions.some((tr) => tr.effects.length > 0)
+					update.viewportChanged
+					// No StateEffects dispatched by this plugin; rebuilding on any
+					// effect-carrying transaction redecorated the viewport on nearly
+					// every cursor move and internal Live Preview render - the main
+					// typing-lag source with several code blocks.
 				) {
 					this.decorations = buildCodeBlockDecorations(
 						update.view,
